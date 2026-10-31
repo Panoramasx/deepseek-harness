@@ -3236,6 +3236,9 @@ importers:
       '@deepseek-ai/dsh-plugin-market':
         specifier: workspace:*
         version: link:../../boot/plugin-market
+      '@deepseek-ai/dsh-preset-transfer':
+        specifier: workspace:*
+        version: link:../../preset/preset-transfer
       '@deepseek-ai/dsh-schedule':
         specifier: workspace:*
         version: link:../../schedule/schedule
@@ -13882,6 +13885,37 @@ importers:
         specifier: workspace:*
         version: link:../../core/system-prompt
 
+  packages/preset/preset-transfer:
+    dependencies:
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.3
+      js-yaml:
+        specifier: ^4.3.2
+        version: 4.3.2
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/cordis-plugin-include':
+        specifier: workspace:~
+        version: link:../../../vendor/include
+      '@deepseek-ai/dsh-agent-preset-registry':
+        specifier: workspace:*
+        version: link:../agent-preset-registry
+      '@deepseek-ai/dsh-app-boot':
+        specifier: workspace:*
+        version: link:../../boot/app-boot
+      '@deepseek-ai/dsh-atomic-write':
+        specifier: workspace:*
+        version: link:../../util/atomic-write
+      '@deepseek-ai/dsh-client-connection':
+        specifier: workspace:*
+        version: link:../../client/connection
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
+
   packages/ptc-runtime/ptc-runtime:
     devDependencies:
       '@deepseek-ai/cordis':
@@ -14175,15 +14209,15 @@ importers:
       '@deepseek-ai/dsh-subagent':
         specifier: workspace:*
         version: link:../../subagent/subagent
-      '@deepseek-ai/dsh-tool-testkit':
-        specifier: workspace:*
-        version: link:../../test-support/tool-testkit
       '@deepseek-ai/dsh-system-prompt':
         specifier: workspace:*
         version: link:../../core/system-prompt
       '@deepseek-ai/dsh-tool-executor-ptc':
         specifier: workspace:*
         version: link:../../core/tool-executor-ptc
+      '@deepseek-ai/dsh-tool-testkit':
+        specifier: workspace:*
+        version: link:../../test-support/tool-testkit
       '@deepseek-ai/dsh-tools':
         specifier: workspace:*
         version: link:../../core/tools

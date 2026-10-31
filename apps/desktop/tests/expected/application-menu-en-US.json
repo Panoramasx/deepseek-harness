@@ -13,6 +13,12 @@
     "label": "Manage dsh Command…"
   },
   {
+    "label": "Export Agent Preset…"
+  },
+  {
+    "label": "Import Agent Preset…"
+  },
+  {
     "type": "separator"
   },
   {

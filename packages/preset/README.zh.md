@@ -25,6 +25,7 @@ kind: "package-group"
 | [agent-preset-registry](agent-preset-registry/README.zh.md) | 选择、代际保留和 profile 编辑 | `ctx.agentPresets` |
 | [agent-preset](agent-preset/README.zh.md) | 声明式子插件和元数据 | — |
 | [persona](persona/README.zh.md) | 可组装的 Agent 人设 | — |
+| [preset-transfer](preset-transfer/README.zh.md) | 可移植的 `.dshpreset` 导出与 profile row 导入（Desktop） | — |
 
 <a id="related-documentation"></a>
 ## 相关文档

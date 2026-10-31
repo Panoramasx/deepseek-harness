@@ -1,0 +1,43 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/preset/preset-transfer/README.md
+/:
+  en: 57c4215f366e95dd
+  zh: 0ae4c7012ec206d7
+/deepseek-ai-dsh-preset-transfer:
+  en: 02efa30860533620
+  zh: e45c7643a41b3f09
+/deepseek-ai-dsh-preset-transfer/summary:
+  en: 17bf6b00e0426dcf
+  zh: 6a8fb226c4b4d7da
+/deepseek-ai-dsh-preset-transfer/table-of-contents:
+  en: 2c4540870b6abd69
+  zh: 9bd272c69762bbdf
+/deepseek-ai-dsh-preset-transfer/package-format:
+  en: 5cbfa3dd3a9eb638
+  zh: 2b837be4eabd04e9
+/deepseek-ai-dsh-preset-transfer/routes:
+  en: 04eae9ad4d60abc7
+  zh: f804d108427dbec9
+/deepseek-ai-dsh-preset-transfer/security-bounds:
+  en: 0e8881c58332b104
+  zh: 3a786e5d0a48327f
+/deepseek-ai-dsh-preset-transfer/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-preset-transfer/model-experience/transfer-routes:
+  en: 0e7e2e959cdd5556
+  zh: 5dddb0bfa570449d
+/deepseek-ai-dsh-preset-transfer/model-experience/transfer-routes/what-the-model-sees:
+  en: b74ad4123ebcd8c7
+  zh: c40dff79a1a6c9e9
+/deepseek-ai-dsh-preset-transfer/model-experience/transfer-routes/token-effect:
+  en: 9ee25410da3c77a7
+  zh: 0c179a8c06438780
+/deepseek-ai-dsh-preset-transfer/model-experience/transfer-routes/kv-cache-effect:
+  en: ef50f4a5af4c3a50
+  zh: 53359ae08ab4ea04
+/deepseek-ai-dsh-preset-transfer/known-limitations-and-deferred-work:
+  en: 6eb0a671bdf31945
+  zh: 9c05248cedc91a47

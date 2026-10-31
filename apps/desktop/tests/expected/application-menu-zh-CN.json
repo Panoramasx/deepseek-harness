@@ -13,6 +13,12 @@
     "label": "管理 dsh 命令…"
   },
   {
+    "label": "导出 Agent Preset…"
+  },
+  {
+    "label": "导入 Agent Preset…"
+  },
+  {
     "type": "separator"
   },
   {

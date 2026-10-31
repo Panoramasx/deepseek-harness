@@ -591,3 +591,9 @@
       name: '@deepseek-ai/dsh-agent-preset-registry'
       config:
         default: standard
+
+    # Desktop-only portable Agent preset packages over the authenticated
+    # loopback connection. Other profiles do not expose the transfer routes.
+    - id: preset-transfer
+      name: '@deepseek-ai/dsh-preset-transfer'
+      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"

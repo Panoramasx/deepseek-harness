@@ -67,6 +67,7 @@ import { DesktopUpdateOverlays } from './update-overlay.ts'
 import { DesktopQuitConfirmation } from './quit-confirmation.ts'
 import { DesktopTray } from './tray.ts'
 import { DesktopTurnNotifications } from './turn-notifications.ts'
+import { DesktopPresetPackages } from './preset-packages.ts'
 import { DesktopBackgroundNotice } from './background-notice.ts'
 
 let focusPrimaryWindow = (): void => {}
@@ -483,6 +484,11 @@ async function main(): Promise<void> {
   let hostUrl: string | undefined
   let hostCookie: string | undefined
   const browserGuests = new DesktopBrowserGuests(() => hostUrl)
+  const presetPackages = new DesktopPresetPackages({
+    locale: currentDesktopLocale,
+    host: () => hostUrl === undefined || hostCookie === undefined ? undefined : { url: hostUrl, cookie: hostCookie },
+    owner: () => mainWindow,
+  })
   let injections: readonly unknown[] = []
   let welcomeBackend: DesktopWelcomeBackend | undefined
   let reportedLaunch = false
@@ -1069,6 +1075,10 @@ async function main(): Promise<void> {
     { label: currentDesktopLocale().messages.checkUpdatesMenu, click: () => { void openUpdatePrompt(true) } },
     ...process.platform === 'darwin' || process.platform === 'win32'
       ? [{ label: currentDesktopLocale().messages.cliCommandMenu, click: () => { void commandManager.show() } }] : [],
+    { label: currentDesktopLocale().messages.presetExportMenu,
+      click: () => { void presetPackages.exportDefault().catch((error: unknown) => { console.error(error) }) } },
+    { label: currentDesktopLocale().messages.presetImportMenu,
+      click: () => { void presetPackages.importPackage().catch((error: unknown) => { console.error(error) }) } },
     { type: 'separator' },
     ...development ? [
       { label: currentDesktopLocale().messages.reloadPageMenu, role: 'reload' as const },
