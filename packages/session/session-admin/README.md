@@ -72,6 +72,6 @@ None. A moved Session keeps the same events and header apart from `cwd`; the nex
 ## Known Limitations and Deferred Work
 
 - Moves still require the Session’s original `cwd` to resolve to a registered Workspace; Sessions imported without a header `cwd` cannot move.
-- The browser half ships `zh` and `en` dictionaries; other UI languages fall back to English.
+- The browser half ships all eight shell languages (`zh`, `en`, `ja`, `es`, `fr`, `de`, `ru`, `pt`).
 - The menu entries exist only in the Desktop profile because the rows are gated on `profileContext.name === 'desktop'`.
 - Deletion has no trash or undo. Attachments shared through `$DSH_HOME/attachments` are retained by design.

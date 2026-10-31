@@ -72,6 +72,6 @@ Desktop Profile 挂载本包；其他 Profile 不暴露这些路由。
 ## 已知限制与后续工作
 
 - 移动要求会话原始 `cwd` 能解析到已注册工作区；没有头部 `cwd` 的导入会话无法移动。
-- 浏览器半部只提供 `zh` 与 `en` 词典；其他界面语言回退到英文。
+- 浏览器半部提供全部八种界面语言（`zh`、`en`、`ja`、`es`、`fr`、`de`、`ru`、`pt`）。
 - 因为行按 `profileContext.name === 'desktop'` 门控，菜单入口只存在于 Desktop Profile。
 - 删除没有回收站或撤销；共享的 `$DSH_HOME/attachments` 按设计保留。

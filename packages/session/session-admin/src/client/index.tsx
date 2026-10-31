@@ -10,7 +10,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 import { useSyncExternalStore, type ReactElement } from 'react'
-import { en, NS, zh, type SessionAdminKey } from './locales.js'
+import { de, en, es, fr, ja, NS, pt, ru, zh, type SessionAdminKey } from './locales.js'
 
 const DELETE_PATH = '/api/session-admin/delete'
 const TARGETS_PATH = '/api/session-admin/targets'
@@ -309,7 +309,7 @@ export const inject = ['slots', 'locale']
  * @param ctx - Client root context.
  */
 export function apply(ctx: Context): void {
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'session-admin: dictionaries')
+  ctx.effect(() => ctx.locale.register(NS, { zh, en, ja, es, fr, de, ru, pt }), 'session-admin: dictionaries')
   ctx.slots.inject('sidebar.workspaces.session.menu.item', () => ctx.slots.register({
     name: 'sidebar.workspaces.session.menu.item', id: 'session-admin-move', order: 500, locale: NS,
   }, MoveMenuItem))
