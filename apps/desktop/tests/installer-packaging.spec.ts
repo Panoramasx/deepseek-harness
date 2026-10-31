@@ -60,12 +60,18 @@ describe('installer preparation preserves application dependencies', () => {
       const aboutIcon = config.extraResources.find(resource => resource.to === 'icon.png')
       expect(aboutIcon).toBeDefined()
       expect(readFileSync(aboutIcon!.from)).toEqual(readFileSync(new URL('../resources/icon-windows.png', import.meta.url)))
-      // Only the Windows package carries the tray bitmaps; macOS keeps the Dock.
-      const trayIcon = config.extraResources.find(resource => resource.to === 'tray.ico')
+      // Windows carries the ICO; macOS carries the template PNG pair for its menu bar icon.
+      const resources = config.extraResources as ReadonlyArray<{ readonly from: string; readonly to: string }>
+      const trayIcon = resources.find(resource => resource.to === 'tray.ico')
+      const trayMac = resources.find(resource => resource.to === 'tray-macos.png')
+      const trayMac2x = resources.find(resource => resource.to === 'tray-macos@2x.png')
       if (platform === 'win32') {
         expect(readFileSync(trayIcon!.from)).toEqual(readFileSync(new URL('../resources/tray-windows.ico', import.meta.url)))
+        expect(trayMac).toBeUndefined()
       } else {
         expect(trayIcon).toBeUndefined()
+        expect(readFileSync(trayMac!.from)).toEqual(readFileSync(new URL('../resources/tray-macos.png', import.meta.url)))
+        expect(readFileSync(trayMac2x!.from)).toEqual(readFileSync(new URL('../resources/tray-macos@2x.png', import.meta.url)))
       }
       const packager = new Packager({ projectDir: tmpdir() })
       // A foreign source-build target avoids rebuilding modules; the real dependency ownership decision still runs.

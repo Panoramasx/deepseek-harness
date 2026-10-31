@@ -323,7 +323,7 @@ vi.mock('electron', () => ({
   protocol: { registerSchemesAsPrivileged: vi.fn(), handle: harness.protocolHandle },
   powerMonitor: harness.powerMonitor,
   Tray: harness.FakeTray,
-  nativeImage: { createFromPath: (path: string) => ({ path }) },
+  nativeImage: { createFromPath: (path: string) => ({ path, setTemplateImage: vi.fn() }) },
 }))
 vi.mock('../src/background-notice.ts', () => ({ DesktopBackgroundNotice: class {
   constructor(options: { markerPath: string }) { harness.backgroundNotice.markerPath = options.markerPath }
@@ -589,8 +589,15 @@ describe('desktop main startup', () => {
     harness.ipcOn.mock.calls.find(([channel]) => channel === DESKTOP_IPC.localeChanged)![1](
       { sender, senderFrame: sender.mainFrame }, nextLocale,
     )
+    const applicationMenu = harness.menu.mock.calls
+      .map(([template]) => template)
+      .filter((template) => {
+        const submenu = template[0]?.submenu
+        return Array.isArray(submenu) && submenu.some(item => item.role === 'toggleDevTools')
+      })
+      .at(-1)
     const refreshed = platform === 'win32' ? applicationMenuItems()
-      : harness.menu.mock.lastCall![0][0]!.submenu as MenuItemConstructorOptions[]
+      : applicationMenu![0]!.submenu as MenuItemConstructorOptions[]
     expect(refreshed.filter(item => item.role === 'toggleDevTools' && item.visible !== false)).toEqual([
       { role: 'toggleDevTools', label: nextLocale === 'en' ? en.toggleDevToolsMenu : zh.toggleDevToolsMenu },
     ])
@@ -1352,7 +1359,7 @@ describe('desktop main startup', () => {
     const host = await readyWorkspace()
     const window = harness.windows[0]!
     expect(harness.trays).toHaveLength(1)
-    expect(harness.trays[0]!.image).toEqual({ path: join('desktop-test-resources', 'tray.ico') })
+    expect(harness.trays[0]!.image).toMatchObject({ path: join('desktop-test-resources', 'tray.ico') })
     expect(harness.backgroundNotice.markerPath).toBe(join(harness.app.getPath('userData'), 'background-close-confirmed'))
     window.show.mockClear()
     window.close()
@@ -1420,7 +1427,12 @@ describe('desktop main startup', () => {
     vi.stubGlobal('process', { ...process, platform: 'darwin', arch: 'arm64', resourcesPath: 'desktop-test-resources' })
     await readyWorkspace()
     const window = harness.windows[0]!
-    expect(harness.trays).toHaveLength(0)
+    expect(harness.trays).toHaveLength(1)
+    expect(harness.trays[0]!.image).toMatchObject({ path: join('desktop-test-resources', 'tray-macos.png') })
+    expect((harness.trays[0]!.image as { setTemplateImage: ReturnType<typeof vi.fn> }).setTemplateImage).toHaveBeenCalledWith(true)
+    window.show.mockClear()
+    harness.trays[0]!.emit('click')
+    expect(window.show).not.toHaveBeenCalled()
     window.fullscreen = true
     window.close()
     expect(window.setFullScreen).toHaveBeenCalledWith(false)

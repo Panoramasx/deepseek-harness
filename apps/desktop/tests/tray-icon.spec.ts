@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { packIco, TRAY_ICON_PATHS, TRAY_ICON_SIZES, unpackIco, type IcoEntry } from '../scripts/render-tray-icon.ts'
+import {
+  MAC_TRAY_ICON_PATHS, MAC_TRAY_ICON_SIZES, packIco, TRAY_ICON_PATHS, TRAY_ICON_SIZES, unpackIco, type IcoEntry,
+} from '../scripts/render-tray-icon.ts'
 
 /** Smallest valid-looking PNG stream: signature plus an IHDR chunk declaring the given edge. */
 function pngStub(width: number, height = width): Buffer {
@@ -39,5 +41,15 @@ describe('tray icon packaging', () => {
     const entries = unpackIco(readFileSync(TRAY_ICON_PATHS.output))
     expect(entries.map(entry => entry.size)).toEqual([...TRAY_ICON_SIZES])
     for (const entry of entries) expect(entry.png.length).toBeGreaterThan(100)
+  })
+
+  it('ships the macOS template at 1x and 2x menu bar sizes', () => {
+    const [path1x, path2x] = [MAC_TRAY_ICON_PATHS.output, MAC_TRAY_ICON_PATHS.output2x]
+    for (const [path, size] of [[path1x, MAC_TRAY_ICON_SIZES[0]], [path2x, MAC_TRAY_ICON_SIZES[1]]] as const) {
+      const png = readFileSync(path)
+      expect(png.readUInt32BE(16)).toBe(size)
+      expect(png.readUInt32BE(20)).toBe(size)
+      expect(png.length).toBeGreaterThan(100)
+    }
   })
 })

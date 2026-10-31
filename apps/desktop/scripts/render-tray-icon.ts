@@ -1,11 +1,13 @@
 /**
- * Render the Windows tray icon with an enlarged whale from `resources/icon-windows.svg`.
+ * Render the Windows tray icon and the macOS menu bar template from their vector sources.
  *
- * The tray shows the icon at 16 logical pixels, so Windows picks one of the
- * bundled bitmaps by display scale. Each size is rasterized from the vector
+ * The Windows tray shows the icon at 16 logical pixels, so Windows picks one of
+ * the bundled bitmaps by display scale. Each size is rasterized from the vector
  * source separately instead of downscaling one large bitmap, which keeps edges
- * crisp at every scale. The committed `resources/tray-windows.ico` is the output;
- * rerun `pnpm run render:tray-icon` in `apps/desktop` after changing the vector source.
+ * crisp at every scale. macOS renders the whale alone as a black template image
+ * at 18 and 36 pixels. The committed `resources/tray-windows.ico`,
+ * `resources/tray-macos.png`, and `resources/tray-macos@2x.png` are the outputs;
+ * rerun `pnpm run render:tray-icon` in `apps/desktop` after changing a vector source.
  */
 
 import { readFile, writeFile } from 'node:fs/promises'
@@ -16,10 +18,20 @@ import sharp from 'sharp'
 /** Bitmap edge lengths bundled in the tray icon: 16 px at 100 % through 400 % display scale. */
 export const TRAY_ICON_SIZES = [16, 20, 24, 32, 40, 48, 64] as const
 
-/** Vector source and committed output of the tray icon. */
+/** Vector source and committed output of the Windows tray icon. */
 export const TRAY_ICON_PATHS = {
   source: fileURLToPath(new URL('../resources/icon-windows.svg', import.meta.url)),
   output: fileURLToPath(new URL('../resources/tray-windows.ico', import.meta.url)),
+} as const
+
+/** Bitmap edge lengths of the macOS menu bar template: 18 pt at 100 % and 200 % display scale. */
+export const MAC_TRAY_ICON_SIZES = [18, 36] as const
+
+/** Vector source and committed outputs of the macOS menu bar template. */
+export const MAC_TRAY_ICON_PATHS = {
+  source: fileURLToPath(new URL('../resources/tray-macos.svg', import.meta.url)),
+  output: fileURLToPath(new URL('../resources/tray-macos.png', import.meta.url)),
+  output2x: fileURLToPath(new URL('../resources/tray-macos@2x.png', import.meta.url)),
 } as const
 
 /** Coordinate space of the vector source; sharp's SVG density is scaled against it. */
@@ -109,6 +121,18 @@ export async function renderTrayIconEntries(svg: Buffer, sizes: readonly number[
   })))
 }
 
+/**
+ * Rasterize the whale template at the macOS menu bar sizes.
+ * @param svg - SVG document containing only the whale glyph on a transparent background.
+ * @param sizes - Bitmap edges to render.
+ * @returns PNG streams in the given order.
+ */
+export async function renderMacTrayTemplates(svg: Buffer, sizes: readonly number[] = MAC_TRAY_ICON_SIZES): Promise<Buffer[]> {
+  return Promise.all(sizes.map(size => sharp(svg, { density: 72 }).resize(size, size, {
+    fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 },
+  }).png().toBuffer()))
+}
+
 function pngDimensions(png: Buffer): { width: number; height: number } {
   if (png.length < 24 || !png.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) throw new Error('tray icon: bitmap is not a PNG stream')
   return { width: png.readUInt32BE(16), height: png.readUInt32BE(20) }
@@ -118,6 +142,10 @@ async function main(): Promise<void> {
   const entries = await renderTrayIconEntries(await readFile(TRAY_ICON_PATHS.source))
   await writeFile(TRAY_ICON_PATHS.output, packIco(entries))
   console.info(`tray icon: wrote ${TRAY_ICON_PATHS.output} with ${entries.map(entry => String(entry.size)).join(', ')} px bitmaps`)
+  const [mac1x, mac2x] = await renderMacTrayTemplates(await readFile(MAC_TRAY_ICON_PATHS.source))
+  await writeFile(MAC_TRAY_ICON_PATHS.output, mac1x!)
+  await writeFile(MAC_TRAY_ICON_PATHS.output2x, mac2x!)
+  console.info(`tray icon: wrote ${MAC_TRAY_ICON_PATHS.output} and ${MAC_TRAY_ICON_PATHS.output2x}`)
 }
 
 if (process.argv[1] !== undefined && import.meta.filename === resolve(process.argv[1])) await main()
