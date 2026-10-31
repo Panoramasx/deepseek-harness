@@ -40,6 +40,12 @@ session 组让对话持久保存，恢复已发布的日志格式，并使已提
 | [`session-checkpoint-policy/`](session-checkpoint-policy/README.zh.md) | 让模型请求、顶层工具副作用与已完成步骤在下一步动作前持久化 | 包装 `ctx.llm` 与 `ctx.tools` |
 | [`session-log-deepseek/`](session-log-deepseek/README.zh.md) | 把增量规范日志作为可选的官方 DeepSeek 请求元数据上传 | 贡献 `dsh_session_log` |
 
+### 管理
+
+| Package | Role | ctx key |
+|---|---|---|
+| [`session-admin/`](session-admin/README.zh.md) | Desktop 会话行操作：彻底删除与移至工作区 | `ctx.sessions`、`ctx.sessionPersistence`、`ctx.workspaceRegistry` |
+
 ### 投影
 
 | 包 | 职责 | ctx key |

@@ -59,6 +59,7 @@
     "@deepseek-ai/dsh-agent-preset": "workspace:*",
     "@deepseek-ai/dsh-agent-preset-registry": "workspace:*",
     "@deepseek-ai/dsh-preset-transfer": "workspace:*",
+    "@deepseek-ai/dsh-session-admin": "workspace:*",
     "@deepseek-ai/dsh-api-job-controller": "workspace:*",
     "@deepseek-ai/dsh-api-remotes": "workspace:*",
     "@deepseek-ai/dsh-api-session-controller": "workspace:*",

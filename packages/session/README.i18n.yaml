@@ -20,6 +20,9 @@
 /session-durable-session-data-plane/packages/persistence:
   en: cbe033c3f37b8aa7
   zh: 69aa84f0712d0111
+/session-durable-session-data-plane/packages/management:
+  en: bef6d54558304b59
+  zh: 1a5f5f2db62bf561
 /session-durable-session-data-plane/packages/projection:
   en: 706441e1ab2fa853
   zh: a7fa44caab3ddada

@@ -366,6 +366,12 @@
     - id: ui-workspace
       name: '@deepseek-ai/dsh-client-ui-workspace'
 
+    # Desktop-only Session administration over the authenticated connection:
+    # permanent deletion and moving a closed Session to another Workspace.
+    - id: session-admin
+      name: '@deepseek-ai/dsh-session-admin'
+      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
+
     # Durable workflow lifecycle as an independent Chat node after the
     # existing generic workflow tool row.
     - id: ui-workflow-run

@@ -40,6 +40,12 @@ The group splits into four families: durable storage (persistence seam, backends
 | [`session-checkpoint-policy/`](session-checkpoint-policy/README.md) | Makes model requests, top-level tool side effects, and completed steps durable before the next action | wraps `ctx.llm` and `ctx.tools` |
 | [`session-log-deepseek/`](session-log-deepseek/README.md) | Uploads the incremental canonical log as optional official DeepSeek request metadata | contributes `dsh_session_log` |
 
+### Management
+
+| Package | Role | ctx key |
+|---|---|---|
+| [`session-admin/`](session-admin/README.md) | Desktop Session row actions: permanent deletion and Workspace moves | `ctx.sessions`, `ctx.sessionPersistence`, `ctx.workspaceRegistry` |
+
 ### Projection
 
 | Package | Role | ctx key |

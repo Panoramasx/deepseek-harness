@@ -300,6 +300,27 @@ export class WorkspaceRegistry extends Service {
   }
 
   /**
+   * Re-read one stored Session's header and refresh its canonical path,
+   * missing/invalid markers, and Workspace membership projection. A plugin
+   * that relocates a Session between project directories calls this after the
+   * new log is durable and before attaching it to the destination Workspace.
+   * @param sessionId - Session whose stored header changed.
+   * @returns the refreshed header, or `undefined` when no stored Session remains.
+   */
+  async reindexSession(sessionId: SessionId): Promise<SessionHeader | undefined> {
+    const snapshot = await this.ctx.sessionPersistence.stat(sessionId)
+    if (snapshot === undefined) {
+      this.headers.delete(sessionId)
+      this.sessionPaths.delete(sessionId)
+      this.missingSessionPaths.delete(sessionId)
+      this.invalidSessionPaths.delete(sessionId)
+      return undefined
+    }
+    await this.indexHeader(snapshot.header)
+    return snapshot.header
+  }
+
+  /**
    * Delete one workspace registration while retaining its directory and every
    * session log. The durable order is updated before the table deletion; a
    * failed table write restores the prior order and keeps the entity
