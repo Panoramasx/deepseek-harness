@@ -22,9 +22,21 @@ it('creates a discoverable default file on first launch without touching other p
   const { userData, path } = fixture()
   rmSync(join(userData, 'desktop'), { recursive: true })
   writeFileSync(join(userData, 'keybindings.json'), 'existing shortcuts\n')
-  expect(readDesktopSettings(userData)).toEqual({ updates: { allowTestAuthPopupWindow: false } })
-  expect(readFileSync(path, 'utf8')).toBe('{\n  "updates": {\n    "allowTestAuthPopupWindow": false\n  }\n}\n')
+  expect(readDesktopSettings(userData)).toEqual({
+    updates: { allowTestAuthPopupWindow: false },
+    notifications: { enabled: true },
+  })
+  expect(readFileSync(path, 'utf8')).toBe('{\n  "updates": {\n    "allowTestAuthPopupWindow": false\n  },\n  "notifications": {\n    "enabled": true\n  }\n}\n')
   expect(readFileSync(join(userData, 'keybindings.json'), 'utf8')).toBe('existing shortcuts\n')
+})
+
+it('defaults notifications on and preserves an explicit switch', () => {
+  const { userData, path } = fixture()
+  expect(readDesktopSettings(userData).notifications.enabled).toBe(true)
+  const raw = '{"notifications":{"enabled":false}}'
+  writeFileSync(path, raw)
+  expect(readDesktopSettings(userData).notifications.enabled).toBe(false)
+  expect(readFileSync(path, 'utf8')).toBe(raw)
 })
 
 it.each(['{}', '{"updates": {}}', '{"other": 1, "updates": {"other": true}}'])('defaults an older document without rewriting it: %s', (raw) => {
@@ -50,7 +62,8 @@ it('loads explicit opt-in and opt-out on the next read without changing an earli
 
 it.each(['', '{', 'null', '[]', '{"updates":null}', '{"updates":[]}',
   '{"updates":{"allowTestAuthPopupWindow":"false"}}', '{"updates":{"allowTestAuthPopupWindow":1}}',
-  '{"updates":{"allowTestAuthPopupWindow":null}}'])('reports invalid settings with their path and preserves the original: %s', (raw) => {
+  '{"updates":{"allowTestAuthPopupWindow":null}}', '{"notifications":null}', '{"notifications":[]}',
+  '{"notifications":{"enabled":"yes"}}', '{"notifications":{"enabled":1}}'])('reports invalid settings with their path and preserves the original: %s', (raw) => {
   const { userData, path } = fixture()
   writeFileSync(path, raw)
   expect(readDesktopSettings(userData).updates.allowTestAuthPopupWindow).toBe(false)

@@ -298,11 +298,14 @@ On first launch, including after an upgrade, Desktop creates this document if it
 {
   "updates": {
     "allowTestAuthPopupWindow": false
+  },
+  "notifications": {
+    "enabled": true
   }
 }
 ```
 
-Existing documents are never overwritten; an omitted `updates` object or field resolves to `false`. Set the field to `true` to permit test authentication dialogs, then fully quit and restart the application. Set it back to `false` and restart to suppress them again. Creation, read, or validation failures use the default `false` without blocking startup. Desktop attempts to warn through the Electron console with the file path; unavailable logging does not block startup. Correct the file and restart to apply an explicit setting. Unknown fields are preserved. Installation updates retain this user-data file; Windows uninstallation removes it under the [uninstall rules](#windows-uninstall-rules).
+Existing documents are never overwritten; an omitted `updates` object or field resolves to `false`, and an omitted `notifications` object or field resolves to `true`. Set `updates.allowTestAuthPopupWindow` to `true` to permit test authentication dialogs, then fully quit and restart the application. Set it back to `false` and restart to suppress them again. With `notifications.enabled` on, a finished root turn shows one native notification when no product window is visible or focused; clicking it raises the window. Cancelled, interrupted, forked, and subagent turns do not notify, and errors or blocked turns use failure copy. Creation, read, or validation failures use the defaults without blocking startup. Desktop attempts to warn through the Electron console with the file path; unavailable logging does not block startup. Correct the file and restart to apply an explicit setting. Unknown fields are preserved. Installation updates retain this user-data file; Windows uninstallation removes it under the [uninstall rules](#windows-uninstall-rules).
 
 <a id="mandatory-update-policy"></a>
 

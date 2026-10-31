@@ -66,6 +66,7 @@ import { installDesktopShortcuts } from './keyboard.ts'
 import { DesktopUpdateOverlays } from './update-overlay.ts'
 import { DesktopQuitConfirmation } from './quit-confirmation.ts'
 import { DesktopTray } from './tray.ts'
+import { DesktopTurnNotifications } from './turn-notifications.ts'
 import { DesktopBackgroundNotice } from './background-notice.ts'
 
 let focusPrimaryWindow = (): void => {}
@@ -395,6 +396,14 @@ async function main(): Promise<void> {
   let workspaceRecovery: Promise<void> | undefined
   let mainWindow: BrowserWindow | undefined
   let welcomeWindow: BrowserWindow | undefined
+  const turnNotifications = new DesktopTurnNotifications({
+    locale: currentDesktopLocale,
+    enabled: () => desktopSettings.notifications.enabled,
+    shouldNotify: () => !quitting && !shuttingDown
+      && (welcomeWindow === undefined || welcomeWindow.isDestroyed() || !welcomeWindow.isVisible())
+      && (mainWindow === undefined || mainWindow.isDestroyed() || !mainWindow.isVisible() || !mainWindow.isFocused()),
+    focus: () => { focusPrimaryWindow() },
+  })
   const installFileDrag = (): (() => Promise<void>) => installDesktopFileDrag(
     event => assertProductSender(event),
     (address, signal) => {
@@ -525,7 +534,7 @@ async function main(): Promise<void> {
           segmentBytes: 256 * 1024, recordBytes: 4096, queuedBytes: 64 * 1024,
         })
         operationJournal.enqueue(JSON.stringify(record))
-      })
+      }, (notification) => { turnNotifications.notify(notification) })
     return {
       start: async () => {
         const ready = await host.start()

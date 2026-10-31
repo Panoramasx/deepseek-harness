@@ -298,11 +298,14 @@ Electron 主进程在启动时读取一次 `app.getPath('userData')/desktop/sett
 {
   "updates": {
     "allowTestAuthPopupWindow": false
+  },
+  "notifications": {
+    "enabled": true
   }
 }
 ```
 
-已有文件不会被覆盖；缺少 `updates` 对象或该字段时均按 `false` 处理。将字段设为 `true` 后完全退出并重启应用，即可允许测试鉴权弹窗。改回 `false` 并重启即可再次禁止。创建、读取或校验失败时使用默认值 `false`，不阻止启动。Desktop 尝试在 Electron 控制台记录包含文件路径的警告；日志不可用也不阻止启动。修正文件并重启后才会应用显式设置。未知字段会保留。安装更新保留此用户数据文件；Windows 卸载按[卸载规则](#windows-uninstall-rules)删除它。
+已有文件不会被覆盖；缺少 `updates` 对象或该字段时按 `false` 处理，缺少 `notifications` 对象或该字段时按 `true` 处理。将 `updates.allowTestAuthPopupWindow` 设为 `true` 后完全退出并重启应用，即可允许测试鉴权弹窗。改回 `false` 并重启即可再次禁止。开启 `notifications.enabled` 后，根会话的回合结束且没有产品窗口可见或聚焦时，Desktop 会显示一条原生通知；点击通知会唤起窗口。取消、崩溃恢复、分叉和子代理的回合不会通知；错误或被阻止的回合使用失败文案。创建、读取或校验失败时使用默认值，不阻止启动。Desktop 尝试在 Electron 控制台记录包含文件路径的警告；日志不可用也不阻止启动。修正文件并重启后才会应用显式设置。未知字段会保留。安装更新保留此用户数据文件；Windows 卸载按[卸载规则](#windows-uninstall-rules)删除它。
 
 <a id="mandatory-update-policy"></a>
 

@@ -44,6 +44,18 @@ type DesktopHostEvent = ReadyEvent | FatalEvent | PlatformSessionEvent | {
   readonly activeTasks: boolean
   readonly scheduledTasks: boolean
   readonly error?: string
+} | {
+  readonly type: 'turn-notification'
+  readonly sessionId: string
+  readonly outcome: 'completed' | 'failed'
+  readonly project?: string
+}
+
+/** Finished turn reported by the Host for a native notification. */
+export interface DesktopTurnNotification {
+  readonly sessionId: string
+  readonly outcome: 'completed' | 'failed'
+  readonly project?: string
 }
 
 /** Correlated answer to one shell control request. */
@@ -105,6 +117,10 @@ function isDesktopHostEvent(message: unknown): message is DesktopHostEvent {
     case 'quit-inspection':
       return Number.isSafeInteger(candidate.requestId) && typeof candidate.activeTasks === 'boolean'
         && typeof candidate.scheduledTasks === 'boolean' && (candidate.error === undefined || typeof candidate.error === 'string')
+    case 'turn-notification':
+      return typeof candidate.sessionId === 'string' && candidate.sessionId.length > 0
+        && (candidate.outcome === 'completed' || candidate.outcome === 'failed')
+        && (candidate.project === undefined || typeof candidate.project === 'string')
     default:
       return false
   }
@@ -200,6 +216,7 @@ export class DesktopHostProcess {
 
     private readonly onPlatformSession?: (session: PlatformSession | null) => void,
     private readonly onPluginOperation?: (record: PluginOperationRecord) => void,
+    private readonly onTurnNotification?: (notification: DesktopTurnNotification) => void,
   ) {}
 
   /**
@@ -246,6 +263,13 @@ export class DesktopHostProcess {
       if (message.type === 'starting') this.runId = message.runId
       else if (message.type === 'ready') this.readyResolve({ url: message.url, injections: message.injections })
       else if (message.type === 'platform-session') this.onPlatformSession?.(message.session)
+      else if (message.type === 'turn-notification') {
+        this.onTurnNotification?.({
+          sessionId: message.sessionId,
+          outcome: message.outcome,
+          ...(message.project === undefined ? {} : { project: message.project }),
+        })
+      }
       else if (message.type === 'shutdown-complete') {
         if (this.stopping) this.shutdownCompleted = true
         else this.fail(new Error('dsh desktop host acknowledged an unrequested shutdown'))

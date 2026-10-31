@@ -10,6 +10,10 @@ export interface DesktopSettings {
   readonly updates: {
     readonly allowTestAuthPopupWindow: boolean
   }
+  readonly notifications: {
+    /** Show a native notification when a turn finishes while the window is out of the way. */
+    readonly enabled: boolean
+  }
 }
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -24,7 +28,10 @@ function record(value: unknown): value is Record<string, unknown> {
 export function readDesktopSettings(userData: string): DesktopSettings {
   const directory = join(userData, 'desktop')
   const path = join(directory, 'settings.json')
-  const defaults: DesktopSettings = { updates: { allowTestAuthPopupWindow: false } }
+  const defaults: DesktopSettings = {
+    updates: { allowTestAuthPopupWindow: false },
+    notifications: { enabled: true },
+  }
   try {
     let raw: string
     try { raw = readFileSync(path, 'utf8') } catch (error) {
@@ -37,14 +44,22 @@ export function readDesktopSettings(userData: string): DesktopSettings {
       raw = readFileSync(path, 'utf8')
     }
     const value: unknown = JSON.parse(raw)
-    if (!record(value) || (value.updates !== undefined && !record(value.updates))) {
-      throw new Error('expected a JSON object with an optional updates object')
+    if (!record(value) || (value.updates !== undefined && !record(value.updates))
+      || (value.notifications !== undefined && !record(value.notifications))) {
+      throw new Error('expected a JSON object with optional updates and notifications objects')
     }
     const allow = value.updates?.allowTestAuthPopupWindow
     if (allow !== undefined && typeof allow !== 'boolean') {
       throw new Error('updates.allowTestAuthPopupWindow must be true or false')
     }
-    return { updates: { allowTestAuthPopupWindow: allow ?? false } }
+    const enabled = value.notifications?.enabled
+    if (enabled !== undefined && typeof enabled !== 'boolean') {
+      throw new Error('notifications.enabled must be true or false')
+    }
+    return {
+      updates: { allowTestAuthPopupWindow: allow ?? false },
+      notifications: { enabled: enabled ?? true },
+    }
   } catch (error) {
     try {
       console.warn(`desktop settings: ${path}: using defaults because settings could not be loaded`, error)
