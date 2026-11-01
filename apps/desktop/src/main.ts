@@ -443,6 +443,30 @@ async function main(): Promise<void> {
         message: messages.startupFailed, detail: error instanceof Error ? error.message : String(error) })
     }
   }
+  const backupDesktopProfile = async (): Promise<void> => {
+    try {
+      const target = await manager.backupProfile()
+      const messages = currentDesktopLocale().messages
+      await dialog.showMessageBox({ type: 'info', title: messages.profileMenu,
+        message: messages.backupProfileDone, detail: target })
+    } catch (error) {
+      const messages = currentDesktopLocale().messages
+      await dialog.showMessageBox({ type: 'error', title: messages.profileMenu,
+        message: messages.startupFailed, detail: error instanceof Error ? error.message : String(error) })
+    }
+  }
+  const deleteDesktopProfile = async (): Promise<void> => {
+    if (desktopProfile === 'desktop') return
+    const messages = currentDesktopLocale().messages
+    const { response } = await dialog.showMessageBox({
+      type: 'warning', title: messages.profileMenu, message: messages.deleteProfileMenu,
+      detail: messages.deleteProfileBody, buttons: [messages.cancel, messages.deleteProfileMenu],
+      defaultId: 0, cancelId: 0, noLink: true,
+    })
+    if (response !== 1) return
+    manager.removeProfile()
+    relaunchWithProfile('desktop')
+  }
   const activeProject = safeMode ? await manager.prepareSafeModeProfile() : paths.profile
   if (safeMode) {
     const messages = currentDesktopLocale().messages
@@ -1161,6 +1185,10 @@ async function main(): Promise<void> {
           click: () => { void createDesktopProfile(false) } },
         { label: currentDesktopLocale().messages.duplicateProfileMenu,
           click: () => { void createDesktopProfile(true) } },
+        { label: currentDesktopLocale().messages.backupProfileMenu,
+          click: () => { void backupDesktopProfile() } },
+        ...desktopProfile === 'desktop' ? [] : [{ label: currentDesktopLocale().messages.deleteProfileMenu,
+          click: () => { void deleteDesktopProfile() } }],
       ] },
     ...development ? [
       { label: currentDesktopLocale().messages.reloadPageMenu, role: 'reload' as const },

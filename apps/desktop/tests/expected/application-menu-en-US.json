@@ -35,6 +35,9 @@
       },
       {
         "label": "Duplicate Current Profile"
+      },
+      {
+        "label": "Back up Current Profile"
       }
     ]
   },

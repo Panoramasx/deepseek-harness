@@ -126,6 +126,19 @@ describe('desktop external plugin profile', () => {
     expect(JSON.parse(readFileSync(join(manager.paths.profile, 'package.json'), 'utf8')).name).toBe('dsh-profile-desktop')
   })
 
+  it('backs up and removes a profile while keeping the source content readable in .backups', async () => {
+    const { root, manager } = setup()
+    await manager.applyRelease()
+    seedPlugin(manager)
+    const backup = await manager.backupProfile()
+    expect(existsSync(join(backup, 'node_modules/plugin/bundle.yml'))).toBe(true)
+    expect(existsSync(join(manager.paths.profile, 'node_modules/plugin/bundle.yml'))).toBe(true)
+    const removed = manager.removeProfile()
+    expect(existsSync(manager.paths.profile)).toBe(false)
+    expect(readFileSync(join(removed, 'package.json'), 'utf8')).toContain('dsh-profile-desktop')
+    expect(removed.startsWith(join(root, '.dsh', 'profiles', '.backups'))).toBe(true)
+  })
+
   it('reuses plugin files without scanning manifests and can disable them', async () => {
     const { manager } = setup()
     await manager.applyRelease()

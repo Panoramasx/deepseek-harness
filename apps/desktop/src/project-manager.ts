@@ -3,6 +3,7 @@
 import {
   cpSync,
   existsSync,
+  renameSync,
   fsyncSync,
   lstatSync,
   mkdirSync,
@@ -14,7 +15,7 @@ import {
   writeFileSync,
   writeSync,
 } from 'node:fs'
-import { basename, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import {
   DESKTOP_HOST_PACKAGE,
   desktopCorePackageOverrides,
@@ -142,6 +143,41 @@ export class DesktopProjectManager {
       writeJson(manifestPath, manifest)
       return dir
     })
+  }
+
+  /**
+   * Copy this profile into the profile directory's `.backups` area.
+   * @returns the absolute backup directory.
+   */
+  async backupProfile(): Promise<string> {
+    return this.withLock(() => {
+      const source = this.paths.profile
+      const backups = join(dirname(source), '.backups')
+      mkdirSync(backups, { recursive: true, mode: 0o700 })
+      const target = join(backups, `${basename(source)}-${new Date().toISOString().replaceAll(/[:.]/gu, '-')}`)
+      cpSync(source, target, {
+        recursive: true,
+        verbatimSymlinks: true,
+        filter: path => basename(path) !== 'lock' && !basename(path).endsWith('.bak'),
+      })
+      return target
+    })
+  }
+
+  /**
+   * Move this profile and its Safe Mode sibling into `.backups`, then remove the working directories.
+   * @returns the profile backup directory.
+   */
+  removeProfile(): string {
+    const source = this.paths.profile
+    const backups = join(dirname(source), '.backups')
+    mkdirSync(backups, { recursive: true, mode: 0o700 })
+    const stamp = new Date().toISOString().replaceAll(/[:.]/gu, '-')
+    const target = join(backups, `${basename(source)}-deleted-${stamp}`)
+    renameSync(source, target)
+    const safe = dirname(this.paths.safeModeProfile)
+    if (existsSync(safe)) renameSync(safe, join(backups, `${basename(safe)}-deleted-${stamp}`))
+    return target
   }
 
   /**
