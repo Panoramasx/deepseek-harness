@@ -10,6 +10,8 @@ interface RecoveryOperations {
   show(options: MessageBoxOptions): Promise<MessageBoxReturnValue>
   stop(): Promise<void>
   disablePlugins(): Promise<void>
+  /** Relaunch into the isolated official-core profile after shutdown. */
+  safeMode(): void
   exit(): void
   restart(): void
   /** Reveal an existing report in the system file manager; reject if it is no longer available. */
@@ -78,7 +80,7 @@ export class DesktopFatalRecovery {
       const addressInUse = /\blisten EADDRINUSE\b/u.test(detail)
       const buttons = addressInUse
         ? [messages.exitApplication, messages.restartApplication]
-        : [messages.exitApplication, messages.restartApplication, messages.disableThirdPartyPlugins]
+        : [messages.exitApplication, messages.restartApplication, messages.safeModeRestart, messages.disableThirdPartyPlugins]
       const reportButton = this.reportState.kind === 'failed' ? undefined : buttons.length
       if (reportButton !== undefined) buttons.push(messages.getDiagnosticReport)
       const { response } = await this.operations.show({
@@ -111,9 +113,21 @@ export class DesktopFatalRecovery {
         this.operations.exit()
         return
       }
+      if (response === 2) {
+        try {
+          await this.operations.stop()
+          this.operations.safeMode()
+          return
+        } catch (failure) {
+          console.error(failure)
+          message = messages.recoveryOperationFailed
+          detail = desktopErrorState(failure).message
+          continue
+        }
+      }
       try {
         await this.operations.stop()
-        if (response === 2) await this.operations.disablePlugins()
+        if (response === 3) await this.operations.disablePlugins()
         this.operations.restart()
         return
       } catch (failure) {

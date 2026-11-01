@@ -7,5 +7,6 @@ Diagnostic report: C:\Users\someone\AppData\Roaming\Panorama Harness\logs\crash-
 If application files are missing or damaged, close the application and reinstall it. Your tasks are stored separately.
 Exit
 Restart
+Restart in Safe Mode
 Disable third-party plugins, back up profile patch, and restart
 Get diagnostic report

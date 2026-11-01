@@ -77,6 +77,30 @@ export class DesktopProjectManager {
   }
 
   /**
+   * Build an isolated official-core profile for Safe Mode. The normal profile,
+   * its patch, and every third-party bundle stay untouched; sessions, settings,
+   * and workspaces remain shared through the same Harness home.
+   * @returns directory the Host must use as its project root.
+   */
+  async prepareSafeModeProfile(): Promise<string> {
+    return this.withLock(() => {
+      const dir = this.paths.safeModeProfile
+      mkdirSync(dir, { recursive: true, mode: 0o700 })
+      // The basename is `desktop`, so first-party desktop-gated rows still mount.
+      writeJson(join(dir, 'package.json'), {
+        name: 'dsh-profile-desktop',
+        private: true,
+        dependencies: {},
+        dsh: { profile: { bundles: [...WEB_PROFILE.bundles] } },
+      })
+      // Safe Mode must not replay a user patch that could re-enable third-party rows.
+      writeFileSync(join(dir, 'cordis.patch.yml'), '[]\n', { mode: 0o600 })
+      initProfile(dir, WEB_PROFILE.bundles)
+      return dir
+    })
+  }
+
+  /**
    * Load application metadata and prepare the external plugin profile without installing packages.
    */
   async applyRelease(): Promise<void> {

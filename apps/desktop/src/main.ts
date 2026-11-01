@@ -78,6 +78,8 @@ let shuttingDown = false
  * development restart command. The installer handoff has its own before-quit branch.
  */
 let skipQuitConfirmation = false
+/** Safe Mode starts the official-core profile and skips every third-party bundle. */
+const safeMode = process.argv.includes('--safe-mode')
 let windowsLanguage: string | undefined = readDesktopLocaleCache(app.getPath('userData'))
 /**
  * Whether the backend has reached ready: false until the first ready, back to
@@ -100,6 +102,13 @@ function quitWithoutConfirmation(): void {
   skipQuitConfirmation = true
   app.quit()
 }
+/** Relaunch with the requested profile mode, keeping every other launch argument. */
+function relaunchWithMode(nextSafeMode: boolean): void {
+  const args = process.argv.slice(1).filter(argument => argument !== '--safe-mode')
+  if (nextSafeMode) args.push('--safe-mode')
+  app.relaunch({ args })
+  quitWithoutConfirmation()
+}
 const recovery = new DesktopFatalRecovery({
   messages: () => currentDesktopLocale().messages,
   show: options => dialog.showMessageBox(options),
@@ -109,6 +118,7 @@ const recovery = new DesktopFatalRecovery({
     const backupPath = await manager.disableAllPlugins()
     console.info('Desktop profile recovery completed:', { profilePatchBackup: backupPath ?? null, homePatch: 'unchanged' })
   },
+  safeMode: () => { relaunchWithMode(true) },
   exit: () => { quitWithoutConfirmation() },
   restart: () => { app.relaunch(); quitWithoutConfirmation() },
   writeReport: (error, source) => persistCrashReport(error, source),
@@ -378,8 +388,8 @@ async function main(): Promise<void> {
   const primaryRuntime = development
     ? developmentPrimaryRuntime()
     : join(process.resourcesPath, 'runtime', 'primary-runtime')
-  const activeProject = paths.profile
   const manager = new DesktopProjectManager(paths, resources)
+  const activeProject = safeMode ? await manager.prepareSafeModeProfile() : paths.profile
   // Dock and Finder launches inherit only launchd's environment; every Host shares one login-shell read.
   const loginShellRead = new AbortController()
   // The probe runs in its own process group, which outlives Desktop unless the read is aborted.
@@ -1080,6 +1090,8 @@ async function main(): Promise<void> {
     { label: currentDesktopLocale().messages.presetImportMenu,
       click: () => { void presetPackages.importPackage().catch((error: unknown) => { console.error(error) }) } },
     { type: 'separator' },
+    { label: safeMode ? currentDesktopLocale().messages.safeModeExit : currentDesktopLocale().messages.safeModeRestart,
+      click: () => { relaunchWithMode(!safeMode) } },
     ...development ? [
       { label: currentDesktopLocale().messages.reloadPageMenu, role: 'reload' as const },
       { label: currentDesktopLocale().messages.restartAppHostMenu, click: () => {

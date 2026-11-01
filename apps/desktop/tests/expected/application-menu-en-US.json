@@ -22,6 +22,9 @@
     "type": "separator"
   },
   {
+    "label": "Restart in Safe Mode"
+  },
+  {
     "role": "toggleDevTools",
     "label": "Developer tools"
   },

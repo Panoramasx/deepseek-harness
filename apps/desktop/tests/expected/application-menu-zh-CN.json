@@ -22,6 +22,9 @@
     "type": "separator"
   },
   {
+    "label": "以安全模式重启"
+  },
+  {
     "role": "toggleDevTools",
     "label": "开发者工具"
   },

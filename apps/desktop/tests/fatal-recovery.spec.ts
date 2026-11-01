@@ -15,6 +15,7 @@ function fixture(
     show: vi.fn((_options: MessageBoxOptions) => choice.promise),
     stop: vi.fn(() => stopped.promise),
     disablePlugins: vi.fn(async () => {}),
+    safeMode: vi.fn(),
     exit: vi.fn(),
     restart: vi.fn(),
     revealReport: vi.fn(async (_path: string) => {}),
@@ -91,7 +92,7 @@ it('locks the first report before the dialog settles and never resets after an a
   expect(operations.show).toHaveBeenCalledOnce()
 })
 
-it.each([0, 1, 2])('waits for shutdown before executing choice %s', async (response) => {
+it.each([0, 1, 2, 3])('waits for shutdown before executing choice %s', async (response) => {
   const { operations, choice, stopped, recovery } = fixture()
   const stopping = Promise.withResolvers<undefined>()
   operations.stop.mockImplementation(() => { stopping.resolve(undefined); return stopped.promise })
@@ -104,14 +105,15 @@ it.each([0, 1, 2])('waits for shutdown before executing choice %s', async (respo
   stopped.resolve(undefined)
   await pending
   expect(operations.exit).toHaveBeenCalledTimes(response === 0 ? 1 : 0)
-  expect(operations.restart).toHaveBeenCalledTimes(response === 0 ? 0 : 1)
-  expect(operations.disablePlugins).toHaveBeenCalledTimes(response === 2 ? 1 : 0)
+  expect(operations.restart).toHaveBeenCalledTimes(response === 1 || response === 3 ? 1 : 0)
+  expect(operations.safeMode).toHaveBeenCalledTimes(response === 2 ? 1 : 0)
+  expect(operations.disablePlugins).toHaveBeenCalledTimes(response === 3 ? 1 : 0)
 })
 
 it('reports a user-requested disable failure and allows exit without restarting', async () => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
   const { operations, stopped, recovery } = fixture()
-  operations.show.mockResolvedValueOnce({ response: 2, checkboxChecked: false })
+  operations.show.mockResolvedValueOnce({ response: 3, checkboxChecked: false })
     .mockResolvedValueOnce({ response: 0, checkboxChecked: false })
   operations.disablePlugins.mockRejectedValueOnce(new Error('profile is read-only'))
   stopped.resolve(undefined)
@@ -135,7 +137,7 @@ it('allows exit after shutdown cleanup fails', async () => {
 it.each(['en', 'zh-CN'])('bounds long diagnostics and recovery-operation errors in %s', async (locale) => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
   const { operations, stopped, recovery } = fixture(locale)
-  operations.show.mockResolvedValueOnce({ response: 2, checkboxChecked: false })
+  operations.show.mockResolvedValueOnce({ response: 3, checkboxChecked: false })
     .mockResolvedValueOnce({ response: 0, checkboxChecked: false })
   operations.disablePlugins.mockRejectedValueOnce(new Error('read-only\n'.repeat(5000) + 'final write failure'))
   stopped.resolve(undefined)
@@ -233,7 +235,7 @@ it('does not wait longer than the report deadline before showing the dialog', as
 it('writes the report once for the first fatal failure and not for the recovery-failure redisplay', async () => {
   vi.spyOn(console, 'error').mockImplementation(() => {})
   const { operations, stopped, recovery } = fixture('en', async () => REPORT_PATH)
-  operations.show.mockResolvedValueOnce({ response: 2, checkboxChecked: false })
+  operations.show.mockResolvedValueOnce({ response: 4, checkboxChecked: false })
     .mockResolvedValueOnce({ response: 0, checkboxChecked: false })
   operations.disablePlugins.mockRejectedValueOnce(new Error('profile is read-only'))
   stopped.resolve(undefined)
@@ -245,7 +247,7 @@ it('writes the report once for the first fatal failure and not for the recovery-
 
 it('reveals the saved report without stopping the Host or restarting', async () => {
   const { operations, stopped, recovery } = fixture('en', async () => REPORT_PATH)
-  operations.show.mockResolvedValueOnce({ response: 3, checkboxChecked: false })
+  operations.show.mockResolvedValueOnce({ response: 4, checkboxChecked: false })
     .mockImplementationOnce(async () => {
       expect(operations.revealReport).toHaveBeenCalledWith(REPORT_PATH)
       expect(operations.stop).not.toHaveBeenCalled()
@@ -262,7 +264,7 @@ it('keeps the original failure and report path when revealing the file fails', a
   vi.spyOn(console, 'error').mockImplementation(() => {})
   const { operations, stopped, recovery } = fixture('en', async () => REPORT_PATH)
   operations.revealReport.mockRejectedValueOnce(new Error('file removed'))
-  operations.show.mockResolvedValueOnce({ response: 3, checkboxChecked: false })
+  operations.show.mockResolvedValueOnce({ response: 4, checkboxChecked: false })
     .mockResolvedValueOnce({ response: 0, checkboxChecked: false })
   stopped.resolve(undefined)
   await recovery.report(new Error('original startup failure'), 'host')
@@ -281,7 +283,7 @@ it('makes a report that finishes after the initial deadline available without re
     expect(operations.show.mock.calls[0]![0].detail).toContain(operations.messages().reportPending)
     operations.show.mockResolvedValueOnce({ response: 0, checkboxChecked: false })
     write.resolve(REPORT_PATH)
-    choice.resolve({ response: 3, checkboxChecked: false })
+    choice.resolve({ response: 4, checkboxChecked: false })
     stopped.resolve(undefined)
     await pending
     expect(operations.revealReport).toHaveBeenCalledWith(REPORT_PATH)
@@ -309,10 +311,10 @@ it.each(['pending', 'failed'] as const)('keeps the recovery failure visible when
     const { operations, stopped, recovery } = fixture('en', () => write.promise)
     stopped.resolve(undefined)
     operations.disablePlugins.mockRejectedValueOnce(new Error('profile is read-only'))
-    operations.show.mockResolvedValueOnce({ response: 2, checkboxChecked: false })
+    operations.show.mockResolvedValueOnce({ response: 3, checkboxChecked: false })
       .mockImplementationOnce(async () => {
         if (state === 'failed') write.resolve(undefined)
-        return { response: 3, checkboxChecked: false }
+        return { response: 4, checkboxChecked: false }
       })
       .mockResolvedValueOnce({ response: 0, checkboxChecked: false })
     const pending = recovery.report(new Error('original startup failure'), 'host')
@@ -339,8 +341,8 @@ it.each([false, true])('keeps the original attachment when revealing after a rec
   stopped.resolve(undefined)
   operations.disablePlugins.mockRejectedValueOnce(new Error('profile is read-only'))
   if (revealFails) operations.revealReport.mockRejectedValueOnce(new Error('file manager unavailable'))
-  operations.show.mockResolvedValueOnce({ response: 2, checkboxChecked: false })
-    .mockResolvedValueOnce({ response: 3, checkboxChecked: false })
+  operations.show.mockResolvedValueOnce({ response: 3, checkboxChecked: false })
+    .mockResolvedValueOnce({ response: 4, checkboxChecked: false })
     .mockResolvedValueOnce({ response: 0, checkboxChecked: false })
   await recovery.report(original, 'host')
   const last = operations.show.mock.calls[2]![0]

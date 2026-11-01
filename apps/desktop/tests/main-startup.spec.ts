@@ -566,7 +566,8 @@ describe('desktop main startup', () => {
       messages.aboutMenu, 'separator', messages.checkUpdatesMenu,
       ...platform === 'linux' ? [] : [messages.cliCommandMenu],
       messages.presetExportMenu, messages.presetImportMenu,
-      'separator', ...packaged ? [] : [messages.reloadPageMenu, messages.restartAppHostMenu],
+      'separator', messages.safeModeRestart,
+      ...packaged ? [] : [messages.reloadPageMenu, messages.restartAppHostMenu],
       messages.toggleDevToolsMenu, 'separator',
       ...platform === 'darwin' ? [messages.hideApplication, messages.hideOtherApplications, messages.showAllApplications, 'separator'] : [],
       'quit',
@@ -1076,7 +1077,7 @@ describe('desktop main startup', () => {
     expect(() => handler(event, 'application', NaN, 34)).toThrow('invalid popup request')
     const application = handler(event, 'application', 48, 34)
     expect(harness.menu.buildFromTemplate.mock.lastCall![0].map(item => item.label ?? item.type)).toEqual([
-      '关于 Panorama Harness', 'separator', '检查更新…', '管理 dsh 命令…', zh.presetExportMenu, zh.presetImportMenu, 'separator', zh.toggleDevToolsMenu, 'separator', '退出',
+      '关于 Panorama Harness', 'separator', '检查更新…', '管理 dsh 命令…', zh.presetExportMenu, zh.presetImportMenu, 'separator', zh.safeModeRestart, zh.toggleDevToolsMenu, 'separator', '退出',
     ])
     expect(harness.popup.mock.lastCall![0]).toMatchObject({ window, x: 48, y: 34 })
     expect(harness.popup.mock.lastCall![0].callback).toBeTypeOf('function')
@@ -1113,8 +1114,8 @@ describe('desktop main startup', () => {
       : ['Application', 'editMenu'])
     const application = template[0]!.submenu as MenuItemConstructorOptions[]
     expect(application.filter(item => item.visible !== false).map(describeItem)).toEqual(platform === 'darwin'
-      ? ['about', 'separator', en.checkUpdatesMenu, en.cliCommandMenu, en.presetExportMenu, en.presetImportMenu, 'separator', 'toggleDevTools', 'separator', 'hide', 'hideOthers', 'unhide', 'separator', 'quit']
-      : ['about', 'separator', en.checkUpdatesMenu, en.presetExportMenu, en.presetImportMenu, 'separator', 'toggleDevTools', 'separator', 'quit'])
+      ? ['about', 'separator', en.checkUpdatesMenu, en.cliCommandMenu, en.presetExportMenu, en.presetImportMenu, 'separator', en.safeModeRestart, 'toggleDevTools', 'separator', 'hide', 'hideOthers', 'unhide', 'separator', 'quit']
+      : ['about', 'separator', en.checkUpdatesMenu, en.presetExportMenu, en.presetImportMenu, 'separator', en.safeModeRestart, 'toggleDevTools', 'separator', 'quit'])
     expect(harness.menu.setApplicationMenu).toHaveBeenCalledOnce()
   })
 
@@ -2311,7 +2312,7 @@ describe('desktop main startup', () => {
     harness.prepared.reject(new Error('runtime resources missing'))
     await harness.dialogShown.promise
     expect((harness.dialog.showMessageBox.mock.calls[0]![0] as MessageBoxOptions).detail).toContain('runtime resources missing')
-    expect((harness.dialog.showMessageBox.mock.calls[0]![0] as MessageBoxOptions).buttons).toEqual(['Exit', 'Restart', 'Disable third-party plugins, back up profile patch, and restart', 'Get diagnostic report'])
+    expect((harness.dialog.showMessageBox.mock.calls[0]![0] as MessageBoxOptions).buttons).toEqual(['Exit', 'Restart', 'Restart in Safe Mode', 'Disable third-party plugins, back up profile patch, and restart', 'Get diagnostic report'])
     expect(harness.windows[0]!.urls).toEqual(['dsh-app://app/'])
   })
 
@@ -2485,7 +2486,7 @@ describe('desktop main startup', () => {
     }
   })
 
-  it.each([{ response: 0, stuck: false }, { response: 1, stuck: false }, { response: 2, stuck: false },
+  it.each([{ response: 0, stuck: false }, { response: 1, stuck: false }, { response: 3, stuck: false },
     { response: 0, stuck: true }])('waits for Host exit and bounds Worker cleanup for recovery $response (stuck=$stuck)', async ({ response, stuck }) => {
     let finishReport!: (result: { appended: boolean; timedOut: boolean; cancelled: boolean }) => void
     let reportSignal: AbortSignal | undefined
@@ -2517,8 +2518,8 @@ describe('desktop main startup', () => {
       finishReport({ appended: false, timedOut: false, cancelled: true })
     }
     expect(harness.app.relaunch).toHaveBeenCalledTimes(response === 0 ? 0 : 1)
-    expect(harness.disableAllPlugins).toHaveBeenCalledTimes(response === 2 ? 1 : 0)
-    if (response === 2) {
+    expect(harness.disableAllPlugins).toHaveBeenCalledTimes(response === 3 ? 1 : 0)
+    if (response === 3) {
       expect(console.info).toHaveBeenCalledWith('Desktop profile recovery completed:', {
         profilePatchBackup: 'desktop-test-profile/cordis.patch.yml.bak-1789555200000', homePatch: 'unchanged',
       })

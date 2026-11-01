@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { resolveDesktopPaths } from '../src/paths.ts'
 import { DesktopProjectManager } from '../src/project-manager.ts'
@@ -43,6 +43,27 @@ afterEach(() => {
 })
 
 describe('desktop external plugin profile', () => {
+  it('builds an isolated official-core profile for Safe Mode without touching the normal profile', async () => {
+    const { manager } = setup()
+    await manager.applyRelease()
+    seedPlugin(manager)
+    const safe = await manager.prepareSafeModeProfile()
+    expect(safe).toBe(manager.paths.safeModeProfile)
+    expect(basename(safe)).toBe('desktop')
+    const manifest = JSON.parse(readFileSync(join(safe, 'package.json'), 'utf8')) as {
+      dependencies: Record<string, string>
+      dsh: { profile: { bundles: string[] } }
+    }
+    expect(manifest.dependencies).toEqual({})
+    expect(manifest.dsh.profile.bundles).toEqual(['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'])
+    expect(readFileSync(join(safe, 'cordis.patch.yml'), 'utf8')).toBe('[]\n')
+    const normal = JSON.parse(readFileSync(join(manager.paths.profile, 'package.json'), 'utf8')) as {
+      dependencies: Record<string, string>
+      dsh: { profile: { bundles: string[] } }
+    }
+    expect(normal.dependencies.plugin).toBe('1.0.0')
+    expect(normal.dsh.profile.bundles).toContain('plugin')
+  })
   it('preserves installed packages, profile state, and the lockfile when preparing a launch', async () => {
     const { manager } = setup()
     await manager.applyRelease()
