@@ -177,12 +177,14 @@ async function confirmMove(t: (key: SessionAdminKey, values?: Record<string, str
 function DeleteMenuItem({ sessionId, displayTitle, useMenuOpenState, t }: PropsRuntime<'sidebar.workspaces.session.menu.item'> & PropsLocale<typeof NS>): ReactElement {
   const [, setMenuOpen] = useMenuOpenState()
   return (
-    <MenuItemButton danger separatorBefore icon={<IconTrashOutlineRegular />} onSelect={() => {
-      setMenuOpen(false)
-      openDelete(sessionId, displayTitle)
-    }}>
-      {t('deleteMenu')}
-    </MenuItemButton>
+    <div data-session-admin-menu="" style={{ display: 'contents' }}>
+      <MenuItemButton danger separatorBefore icon={<IconTrashOutlineRegular />} onSelect={() => {
+        setMenuOpen(false)
+        openDelete(sessionId, displayTitle)
+      }}>
+        {t('deleteMenu')}
+      </MenuItemButton>
+    </div>
   )
 }
 
@@ -190,12 +192,14 @@ function DeleteMenuItem({ sessionId, displayTitle, useMenuOpenState, t }: PropsR
 function MoveMenuItem({ sessionId, displayTitle, useMenuOpenState, t }: PropsRuntime<'sidebar.workspaces.session.menu.item'> & PropsLocale<typeof NS>): ReactElement {
   const [, setMenuOpen] = useMenuOpenState()
   return (
-    <MenuItemButton icon={<IconFolderOpenOutlineRegular />} onSelect={() => {
-      setMenuOpen(false)
-      openMove(t, sessionId, displayTitle)
-    }}>
-      {t('moveMenu')}
-    </MenuItemButton>
+    <div data-session-admin-menu="" style={{ display: 'contents' }}>
+      <MenuItemButton icon={<IconFolderOpenOutlineRegular />} onSelect={() => {
+        setMenuOpen(false)
+        openMove(t, sessionId, displayTitle)
+      }}>
+        {t('moveMenu')}
+      </MenuItemButton>
+    </div>
   )
 }
 
@@ -310,6 +314,12 @@ export const inject = ['slots', 'locale']
  */
 export function apply(ctx: Context): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en, ja, es, fr, de, ru, pt }), 'session-admin: dictionaries')
+  ctx.effect(() => {
+    const style = document.createElement('style')
+    style.textContent = '[role="menu"]:has([data-session-admin-menu]) { min-width: 208px; }'
+    document.head.appendChild(style)
+    return () => { style.remove() }
+  }, 'session-admin: menu width')
   ctx.slots.inject('sidebar.workspaces.session.menu.item', () => ctx.slots.register({
     name: 'sidebar.workspaces.session.menu.item', id: 'session-admin-move', order: 500, locale: NS,
   }, MoveMenuItem))

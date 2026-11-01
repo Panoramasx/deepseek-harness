@@ -4,13 +4,13 @@
 export const NS = 'session-admin'
 
 export const en = {
-  deleteMenu: 'Delete session permanently…',
+  deleteMenu: 'Delete session permanently',
   deleteTitle: 'Delete this session permanently?',
   deleteBody: 'All conversation records and local cache for “{name}” will be permanently removed. This cannot be undone.',
   deleteConfirm: 'Delete permanently',
   deleting: 'Deleting…',
   deleteFailed: 'Delete failed: {reason}',
-  moveMenu: 'Move to workspace…',
+  moveMenu: 'Move to workspace',
   moveTitle: 'Move to workspace',
   moveDescription: 'Choose the destination workspace. Moving rewrites the session’s original working directory and relocates its local log. Close the session first; this cannot be undone.',
   moveConfirm: 'Move',
@@ -49,13 +49,13 @@ export const en = {
 export type SessionAdminKey = keyof typeof en
 
 export const zh: Record<SessionAdminKey, string> = {
-  deleteMenu: '彻底删除会话…',
+  deleteMenu: '彻底删除会话',
   deleteTitle: '彻底删除会话？',
   deleteBody: '“{name}”的全部对话记录与本地缓存将被永久删除，此操作无法撤销。',
   deleteConfirm: '彻底删除',
   deleting: '正在删除…',
   deleteFailed: '删除失败：{reason}',
-  moveMenu: '移至工作区…',
+  moveMenu: '移至工作区',
   moveTitle: '移至工作区',
   moveDescription: '选择目标工作区。移动会改写该会话的原始工作目录并迁移本地日志；会话需先关闭，此操作不可撤销。',
   moveConfirm: '移动',
@@ -92,13 +92,13 @@ export const zh: Record<SessionAdminKey, string> = {
 
 
 export const ja: Record<SessionAdminKey, string> = {
-  deleteMenu: 'セッションを完全に削除…',
+  deleteMenu: 'セッションを完全に削除',
   deleteTitle: 'このセッションを完全に削除しますか？',
   deleteBody: '「{name}」の会話履歴とローカルキャッシュは完全に削除されます。この操作は元に戻せません。',
   deleteConfirm: '完全に削除',
   deleting: '削除中…',
   deleteFailed: '削除に失敗しました：{reason}',
-  moveMenu: 'ワークスペースへ移動…',
+  moveMenu: 'ワークスペースへ移動',
   moveTitle: 'ワークスペースへ移動',
   moveDescription: '移動先のワークスペースを選択してください。移動するとセッションの元の作業ディレクトリが書き換えられ、ローカルログが移されます。先にセッションを閉じてください。この操作は元に戻せません。',
   moveConfirm: '移動',
@@ -134,13 +134,13 @@ export const ja: Record<SessionAdminKey, string> = {
 }
 
 export const es: Record<SessionAdminKey, string> = {
-  deleteMenu: 'Eliminar sesión permanentemente…',
+  deleteMenu: 'Eliminar sesión permanentemente',
   deleteTitle: '¿Eliminar esta sesión permanentemente?',
   deleteBody: 'Todos los registros de conversación y la caché local de «{name}» se eliminarán permanentemente. Esta acción no se puede deshacer.',
   deleteConfirm: 'Eliminar permanentemente',
   deleting: 'Eliminando…',
   deleteFailed: 'Error al eliminar: {reason}',
-  moveMenu: 'Mover a un espacio de trabajo…',
+  moveMenu: 'Mover a un espacio de trabajo',
   moveTitle: 'Mover a un espacio de trabajo',
   moveDescription: 'Elige el espacio de trabajo de destino. Mover reescribe el directorio de trabajo original de la sesión y traslada su registro local. Cierra primero la sesión; esta acción no se puede deshacer.',
   moveConfirm: 'Mover',
@@ -176,13 +176,13 @@ export const es: Record<SessionAdminKey, string> = {
 }
 
 export const fr: Record<SessionAdminKey, string> = {
-  deleteMenu: 'Supprimer définitivement la session…',
+  deleteMenu: 'Supprimer définitivement la session',
   deleteTitle: 'Supprimer définitivement cette session ?',
   deleteBody: 'Tous les enregistrements de conversation et le cache local de « {name} » seront définitivement supprimés. Cette action est irréversible.',
   deleteConfirm: 'Supprimer définitivement',
   deleting: 'Suppression…',
   deleteFailed: 'Échec de la suppression : {reason}',
-  moveMenu: 'Déplacer vers un espace de travail…',
+  moveMenu: 'Déplacer vers un espace de travail',
   moveTitle: 'Déplacer vers un espace de travail',
   moveDescription: 'Choisissez l’espace de travail de destination. Le déplacement réécrit le répertoire de travail d’origine de la session et déplace son journal local. Fermez d’abord la session ; cette action est irréversible.',
   moveConfirm: 'Déplacer',
@@ -218,13 +218,13 @@ export const fr: Record<SessionAdminKey, string> = {
 }
 
 export const de: Record<SessionAdminKey, string> = {
-  deleteMenu: 'Sitzung endgültig löschen…',
+  deleteMenu: 'Sitzung endgültig löschen',
   deleteTitle: 'Diese Sitzung endgültig löschen?',
   deleteBody: 'Alle Gesprächsaufzeichnungen und der lokale Cache von „{name}“ werden endgültig entfernt. Dies kann nicht rückgängig gemacht werden.',
   deleteConfirm: 'Endgültig löschen',
   deleting: 'Wird gelöscht…',
   deleteFailed: 'Löschen fehlgeschlagen: {reason}',
-  moveMenu: 'In Arbeitsbereich verschieben…',
+  moveMenu: 'In Arbeitsbereich verschieben',
   moveTitle: 'In Arbeitsbereich verschieben',
   moveDescription: 'Wählen Sie den Ziel-Arbeitsbereich. Beim Verschieben wird das ursprüngliche Arbeitsverzeichnis der Sitzung neu geschrieben und ihr lokales Protokoll verschoben. Schließen Sie die Sitzung zuerst; dies kann nicht rückgängig gemacht werden.',
   moveConfirm: 'Verschieben',
@@ -260,13 +260,13 @@ export const de: Record<SessionAdminKey, string> = {
 }
 
 export const ru: Record<SessionAdminKey, string> = {
-  deleteMenu: 'Удалить сессию навсегда…',
+  deleteMenu: 'Удалить сессию навсегда',
   deleteTitle: 'Удалить эту сессию навсегда?',
   deleteBody: 'Все записи разговора и локальный кэш «{name}» будут удалены безвозвратно. Это действие нельзя отменить.',
   deleteConfirm: 'Удалить навсегда',
   deleting: 'Удаление…',
   deleteFailed: 'Не удалось удалить: {reason}',
-  moveMenu: 'Переместить в рабочую область…',
+  moveMenu: 'Переместить в рабочую область',
   moveTitle: 'Переместить в рабочую область',
   moveDescription: 'Выберите целевую рабочую область. Перемещение перезапишет исходный рабочий каталог сессии и перенесёт её локальный журнал. Сначала закройте сессию; это действие нельзя отменить.',
   moveConfirm: 'Переместить',
@@ -302,13 +302,13 @@ export const ru: Record<SessionAdminKey, string> = {
 }
 
 export const pt: Record<SessionAdminKey, string> = {
-  deleteMenu: 'Excluir sessão permanentemente…',
+  deleteMenu: 'Excluir sessão permanentemente',
   deleteTitle: 'Excluir esta sessão permanentemente?',
   deleteBody: 'Todos os registros de conversa e o cache local de “{name}” serão removidos permanentemente. Esta ação não pode ser desfeita.',
   deleteConfirm: 'Excluir permanentemente',
   deleting: 'Excluindo…',
   deleteFailed: 'Falha ao excluir: {reason}',
-  moveMenu: 'Mover para uma área de trabalho…',
+  moveMenu: 'Mover para uma área de trabalho',
   moveTitle: 'Mover para uma área de trabalho',
   moveDescription: 'Escolha a área de trabalho de destino. Mover reescreve o diretório de trabalho original da sessão e transfere seu registro local. Feche a sessão primeiro; esta ação não pode ser desfeita.',
   moveConfirm: 'Mover',
