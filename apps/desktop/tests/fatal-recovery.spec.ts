@@ -71,6 +71,8 @@ it.each(['en', 'zh-CN'])('records the %s native recovery dialog', async (locale)
   const pending = recovery.report(new AggregateError([new Error('Plugin initialization failed')], 'Desktop Host failed'), 'main')
   await shown(operations)
   const options = operations.show.mock.calls[0]![0]
+  expect(options.message).toBe(operations.messages().pluginFailureAdvice)
+  expect(options.defaultId).toBe(2)
   await expect([options.title, options.message, options.detail, ...options.buttons!].join('\n') + '\n')
     .toMatchFileSnapshot(`expected/fatal-dialog-${locale}.txt`)
   choice.resolve({ response: 0, checkboxChecked: false })

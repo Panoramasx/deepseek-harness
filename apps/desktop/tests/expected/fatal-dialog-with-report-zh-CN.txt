@@ -1,5 +1,5 @@
 Panorama Harness 无法使用
-应用无法启动或已意外停止。
+可能是插件导致启动失败。安全模式会停用第三方插件，仅启动官方核心。
 Desktop Host failed
 Plugin initialization failed
 诊断报告：C:\Users\someone\AppData\Roaming\Panorama Harness\logs\crash-2026-09-22T10-30-00-000Z-host.log

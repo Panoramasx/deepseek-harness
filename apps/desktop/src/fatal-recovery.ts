@@ -75,7 +75,8 @@ export class DesktopFatalRecovery {
     const report = this.persist(error, source)
     await this.waitForReport(report)
     let detail = desktopErrorState(error).message
-    let message = messages.fatalSummary
+    const pluginFailure = /(?:\bplugin\b|\bbundle\b|\bcordis\b|@local\/)/iu.test(detail)
+    let message = pluginFailure ? messages.pluginFailureAdvice : messages.fatalSummary
     for (;;) {
       const addressInUse = /\blisten EADDRINUSE\b/u.test(detail)
       const buttons = addressInUse
@@ -91,7 +92,7 @@ export class DesktopFatalRecovery {
           ? `${messages.startupAddressInUse}${reportLine(messages, this.reportState)}`
           : dialogDetail(detail, messages, this.reportState),
         buttons,
-        defaultId: 1,
+        defaultId: pluginFailure ? 2 : 1,
         cancelId: 0,
         noLink: true,
       })

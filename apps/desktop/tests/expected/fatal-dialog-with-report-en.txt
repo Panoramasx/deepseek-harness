@@ -1,5 +1,5 @@
 Panorama Harness is unavailable
-The application could not start or stopped unexpectedly.
+A plugin may have stopped startup. Safe Mode starts the official core without third-party plugins.
 Desktop Host failed
 Plugin initialization failed
 Diagnostic report: C:\Users\someone\AppData\Roaming\Panorama Harness\logs\crash-2026-09-22T10-30-00-000Z-host.log

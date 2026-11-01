@@ -1058,7 +1058,7 @@ describe('desktop main startup', () => {
     host.exited.resolve()
     await harness.dialogShown.promise
     expect(vi.mocked(writeCrashReport).mock.calls[0]![1].app.locale).toBe('zh-CN')
-    expect((harness.dialog.showMessageBox.mock.calls[0]![0] as MessageBoxOptions).message).toBe(zh.fatalSummary)
+    expect((harness.dialog.showMessageBox.mock.calls[0]![0] as MessageBoxOptions).message).toBe(zh.pluginFailureAdvice)
   })
 
   it('maps Windows caption menus to localized native commands and rejects foreign popup requests', async () => {

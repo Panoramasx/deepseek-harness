@@ -16,6 +16,7 @@ import {
   powerMonitor,
   nativeImage,
   nativeTheme,
+  Notification,
   net,
   protocol,
   session,
@@ -390,6 +391,10 @@ async function main(): Promise<void> {
     : join(process.resourcesPath, 'runtime', 'primary-runtime')
   const manager = new DesktopProjectManager(paths, resources)
   const activeProject = safeMode ? await manager.prepareSafeModeProfile() : paths.profile
+  if (safeMode) {
+    const messages = currentDesktopLocale().messages
+    new Notification({ title: messages.safeModeTitle, body: messages.safeModeDetail }).show()
+  }
   // Dock and Finder launches inherit only launchd's environment; every Host shares one login-shell read.
   const loginShellRead = new AbortController()
   // The probe runs in its own process group, which outlives Desktop unless the read is aborted.
