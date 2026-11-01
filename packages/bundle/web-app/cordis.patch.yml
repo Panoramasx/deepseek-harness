@@ -371,6 +371,9 @@
     - id: session-admin
       name: '@deepseek-ai/dsh-session-admin'
       disabled: !!js "ctx.get('profileContext')?.name?.startsWith('desktop') !== true"
+    - id: image-generation
+      name: '@deepseek-ai/dsh-image-generation'
+      disabled: !!js "ctx.get('profileContext')?.name?.startsWith('desktop') !== true"
 
     # Durable workflow lifecycle as an independent Chat node after the
     # existing generic workflow tool row.
