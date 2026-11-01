@@ -5,6 +5,8 @@ export const NS = 'session-admin'
 
 export const en = {
   deleteMenu: 'Delete session permanently',
+  safeModeBanner: 'Safe Mode: third-party plugins are disabled.',
+  managePlugins: 'Manage plugins',
   deleteTitle: 'Delete this session permanently?',
   deleteBody: 'All conversation records and local cache for “{name}” will be permanently removed. This cannot be undone.',
   deleteConfirm: 'Delete permanently',
@@ -50,6 +52,8 @@ export type SessionAdminKey = keyof typeof en
 
 export const zh: Record<SessionAdminKey, string> = {
   deleteMenu: '彻底删除会话',
+  safeModeBanner: '安全模式：第三方插件已停用。',
+  managePlugins: '管理插件',
   deleteTitle: '彻底删除会话？',
   deleteBody: '“{name}”的全部对话记录与本地缓存将被永久删除，此操作无法撤销。',
   deleteConfirm: '彻底删除',
@@ -93,6 +97,8 @@ export const zh: Record<SessionAdminKey, string> = {
 
 export const ja: Record<SessionAdminKey, string> = {
   deleteMenu: 'セッションを完全に削除',
+  safeModeBanner: 'セーフモード: サードパーティのプラグインは無効です。',
+  managePlugins: 'プラグインを管理',
   deleteTitle: 'このセッションを完全に削除しますか？',
   deleteBody: '「{name}」の会話履歴とローカルキャッシュは完全に削除されます。この操作は元に戻せません。',
   deleteConfirm: '完全に削除',
@@ -135,6 +141,8 @@ export const ja: Record<SessionAdminKey, string> = {
 
 export const es: Record<SessionAdminKey, string> = {
   deleteMenu: 'Eliminar sesión permanentemente',
+  safeModeBanner: 'Modo seguro: los complementos de terceros están deshabilitados.',
+  managePlugins: 'Gestionar complementos',
   deleteTitle: '¿Eliminar esta sesión permanentemente?',
   deleteBody: 'Todos los registros de conversación y la caché local de «{name}» se eliminarán permanentemente. Esta acción no se puede deshacer.',
   deleteConfirm: 'Eliminar permanentemente',
@@ -177,6 +185,8 @@ export const es: Record<SessionAdminKey, string> = {
 
 export const fr: Record<SessionAdminKey, string> = {
   deleteMenu: 'Supprimer définitivement la session',
+  safeModeBanner: 'Mode sans échec : les extensions tierces sont désactivées.',
+  managePlugins: 'Gérer les extensions',
   deleteTitle: 'Supprimer définitivement cette session ?',
   deleteBody: 'Tous les enregistrements de conversation et le cache local de « {name} » seront définitivement supprimés. Cette action est irréversible.',
   deleteConfirm: 'Supprimer définitivement',
@@ -219,6 +229,8 @@ export const fr: Record<SessionAdminKey, string> = {
 
 export const de: Record<SessionAdminKey, string> = {
   deleteMenu: 'Sitzung endgültig löschen',
+  safeModeBanner: 'Abgesicherter Modus: Drittanbieter-Plugins sind deaktiviert.',
+  managePlugins: 'Plugins verwalten',
   deleteTitle: 'Diese Sitzung endgültig löschen?',
   deleteBody: 'Alle Gesprächsaufzeichnungen und der lokale Cache von „{name}“ werden endgültig entfernt. Dies kann nicht rückgängig gemacht werden.',
   deleteConfirm: 'Endgültig löschen',
@@ -261,6 +273,8 @@ export const de: Record<SessionAdminKey, string> = {
 
 export const ru: Record<SessionAdminKey, string> = {
   deleteMenu: 'Удалить сессию навсегда',
+  safeModeBanner: 'Безопасный режим: сторонние плагины отключены.',
+  managePlugins: 'Управлять плагинами',
   deleteTitle: 'Удалить эту сессию навсегда?',
   deleteBody: 'Все записи разговора и локальный кэш «{name}» будут удалены безвозвратно. Это действие нельзя отменить.',
   deleteConfirm: 'Удалить навсегда',
@@ -303,6 +317,8 @@ export const ru: Record<SessionAdminKey, string> = {
 
 export const pt: Record<SessionAdminKey, string> = {
   deleteMenu: 'Excluir sessão permanentemente',
+  safeModeBanner: 'Modo de segurança: os plugins de terceiros estão desativados.',
+  managePlugins: 'Gerenciar plugins',
   deleteTitle: 'Excluir esta sessão permanentemente?',
   deleteBody: 'Todos os registros de conversa e o cache local de “{name}” serão removidos permanentemente. Esta ação não pode ser desfeita.',
   deleteConfirm: 'Excluir permanentemente',

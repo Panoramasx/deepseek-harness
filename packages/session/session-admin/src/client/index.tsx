@@ -299,6 +299,30 @@ function MoveDialog({ view, t }: { readonly view: Extract<Dialog, { kind: 'move'
 }
 
 /** Overlay rendering whichever administration dialog is open. */
+/** A small, non-interactive reminder that the official core is running without third-party plugins. */
+function SafeModeBanner({ t }: PropsLocale<typeof NS>): ReactElement | null {
+  const safeMode = (globalThis as { __DSH_SAFE_MODE__?: boolean }).__DSH_SAFE_MODE__ === true
+  if (!safeMode) return null
+  return (
+    <div role="status" data-safe-mode-banner style={{
+      position: 'fixed', top: '44px', left: '50%', transform: 'translateX(-50%)', zIndex: 1200,
+      display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 6px 5px 12px',
+      borderRadius: '999px', whiteSpace: 'nowrap', background: 'var(--dsw-alias-state-warning-primary, #f5a524)',
+      color: '#1f2937', fontSize: '12px', lineHeight: '18px', boxShadow: 'var(--dsw-elevation-prominent)',
+    }}>
+      <span>{t('safeModeBanner')}</span>
+      <button type="button" onClick={() => {
+        const icon = document.querySelector('[data-icon="dsw-icon-plugin-pinwheel-outline-regular"]')
+        const trigger = icon?.closest('button')
+        if (trigger instanceof HTMLElement) trigger.click()
+      }} style={{
+        border: 0, borderRadius: '999px', padding: '3px 10px', cursor: 'pointer',
+        background: 'rgba(31, 41, 55, 0.12)', color: '#1f2937', font: 'inherit',
+      }}>{t('managePlugins')}</button>
+    </div>
+  )
+}
+
 function AdminDialog({ t }: PropsLocale<typeof NS>): ReactElement | null {
   const view = useSyncExternalStore(subscribe, snapshot)
   if (view === null) return null
@@ -326,6 +350,9 @@ export function apply(ctx: Context): void {
   ctx.slots.inject('sidebar.workspaces.session.menu.item', () => ctx.slots.register({
     name: 'sidebar.workspaces.session.menu.item', id: 'session-admin-delete', order: 900, locale: NS,
   }, DeleteMenuItem))
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+    name: 'shell.overlay', id: 'safe-mode-banner', order: -100, locale: NS,
+  }, SafeModeBanner))
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay', id: 'session-admin-dialog', locale: NS,
   }, AdminDialog))
