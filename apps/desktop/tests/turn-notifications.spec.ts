@@ -37,7 +37,7 @@ describe('desktop turn notifications', () => {
     const { notifier, focus } = setup()
     notifier.notify(completed)
     expect(native.shown).toHaveLength(1)
-    expect(native.shown[0]!.options).toEqual({ title: 'DeepSeek Harness', body: 'Task completed · project' })
+    expect(native.shown[0]!.options).toEqual({ title: 'Panorama Harness', body: 'Task completed · project' })
     expect(native.shown[0]!.show).toHaveBeenCalledOnce()
     native.shown[0]!.emit('click')
     expect(focus).toHaveBeenCalledOnce()
