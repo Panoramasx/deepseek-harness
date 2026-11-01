@@ -3,8 +3,9 @@ import type { ProductEventMap, ProductEvent } from '@deepseek-ai/dsh-client-prod
 import { WINDOWS_TITLEBAR_HEIGHT } from './windows-layout.ts'
 /** Electron shell: desktop project ownership, custom protocol, windows, and lifecycle. */
 
+import { existsSync, readdirSync } from 'node:fs'
 import { access, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   app,
@@ -81,6 +82,15 @@ let shuttingDown = false
 let skipQuitConfirmation = false
 /** Safe Mode starts the official-core profile and skips every third-party bundle. */
 const safeMode = process.argv.includes('--safe-mode')
+/** Selected desktop profile directory; `desktop` is the default personal profile. */
+const desktopProfile = (() => {
+  const prefix = '--desktop-profile='
+  const values = process.argv.filter(argument => argument.startsWith(prefix))
+  if (values.length > 1) throw new Error('desktop: --desktop-profile may be supplied once')
+  const name = values[0]?.slice(prefix.length) ?? 'desktop'
+  resolveDesktopPaths(undefined, name)
+  return name
+})()
 let windowsLanguage: string | undefined = readDesktopLocaleCache(app.getPath('userData'))
 /**
  * Whether the backend has reached ready: false until the first ready, back to
@@ -104,9 +114,20 @@ function quitWithoutConfirmation(): void {
   app.quit()
 }
 /** Relaunch with the requested profile mode, keeping every other launch argument. */
+function relaunchArguments(): string[] {
+  return process.argv.slice(1).filter(argument => argument !== '--safe-mode' && !argument.startsWith('--desktop-profile='))
+}
 function relaunchWithMode(nextSafeMode: boolean): void {
-  const args = process.argv.slice(1).filter(argument => argument !== '--safe-mode')
+  const args = relaunchArguments()
   if (nextSafeMode) args.push('--safe-mode')
+  if (desktopProfile !== 'desktop') args.push(`--desktop-profile=${desktopProfile}`)
+  app.relaunch({ args })
+  quitWithoutConfirmation()
+}
+function relaunchWithProfile(name: string): void {
+  const args = relaunchArguments()
+  if (safeMode) args.push('--safe-mode')
+  if (name !== 'desktop') args.push(`--desktop-profile=${name}`)
   app.relaunch({ args })
   quitWithoutConfirmation()
 }
@@ -115,7 +136,7 @@ const recovery = new DesktopFatalRecovery({
   show: options => dialog.showMessageBox(options),
   stop: () => { shuttingDown = true; return stopForRecovery() },
   disablePlugins: async () => {
-    const manager = new DesktopProjectManager(resolveDesktopPaths(), runtimeResources())
+    const manager = new DesktopProjectManager(resolveDesktopPaths(undefined, desktopProfile), runtimeResources())
     const backupPath = await manager.disableAllPlugins()
     console.info('Desktop profile recovery completed:', { profilePatchBackup: backupPath ?? null, homePatch: 'unchanged' })
   },
@@ -384,12 +405,23 @@ async function main(): Promise<void> {
   const journalDirectory = process.env.DSH_DESKTOP_UPDATE_JOURNAL_DIR
   const updateJournal = journalDirectory === undefined ? undefined : new DesktopUpdateJournal(journalDirectory, app.getVersion())
   const resources = runtimeResources()
-  const paths = resolveDesktopPaths()
+  const paths = resolveDesktopPaths(undefined, desktopProfile)
   const development = !app.isPackaged
   const primaryRuntime = development
     ? developmentPrimaryRuntime()
     : join(process.resourcesPath, 'runtime', 'primary-runtime')
   const manager = new DesktopProjectManager(paths, resources)
+  const profiles = (() => {
+    try {
+      return readdirSync(dirname(paths.profile), { withFileTypes: true })
+        .filter(entry => entry.isDirectory() && /^desktop(?:-[a-z0-9-]+)?$/u.test(entry.name)
+          && existsSync(join(dirname(paths.profile), entry.name, 'package.json')))
+        .map(entry => entry.name)
+        .sort()
+    } catch {
+      return [desktopProfile]
+    }
+  })()
   const activeProject = safeMode ? await manager.prepareSafeModeProfile() : paths.profile
   if (safeMode) {
     const messages = currentDesktopLocale().messages
@@ -1097,6 +1129,13 @@ async function main(): Promise<void> {
     { type: 'separator' },
     { label: safeMode ? currentDesktopLocale().messages.safeModeExit : currentDesktopLocale().messages.safeModeRestart,
       click: () => { relaunchWithMode(!safeMode) } },
+    ...profiles.length > 1 ? [{
+      label: currentDesktopLocale().messages.profileMenu,
+      submenu: profiles.map(name => ({
+        label: name, type: 'radio' as const, checked: name === desktopProfile,
+        click: () => { relaunchWithProfile(name) },
+      })),
+    }] : [],
     ...development ? [
       { label: currentDesktopLocale().messages.reloadPageMenu, role: 'reload' as const },
       { label: currentDesktopLocale().messages.restartAppHostMenu, click: () => {

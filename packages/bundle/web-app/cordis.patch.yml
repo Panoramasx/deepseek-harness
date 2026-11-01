@@ -36,7 +36,7 @@
 - insert:
     - id: desktop-product-telemetry
       name: '@deepseek-ai/dsh-host-product-telemetry-otel'
-      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
+      disabled: !!js "ctx.get('profileContext')?.name?.startsWith('desktop') !== true"
       config:
         scheduledDelayMillis: 30000
         timeoutMillis: 15000
@@ -48,7 +48,7 @@
 
     - id: product-analytics
       name: '@deepseek-ai/dsh-client-product-analytics'
-      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
+      disabled: !!js "ctx.get('profileContext')?.name?.startsWith('desktop') !== true"
       config:
         enabled: true
         appVersion: !!js process.env.DSH_CLIENT_VERSION
@@ -291,7 +291,7 @@
     # Web profiles opt in; Desktop retains sandboxed HTTP(S) Browser tabs.
     - id: ui-sidebar-browser
       name: '@deepseek-ai/dsh-client-ui-sidebar-browser'
-      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
+      disabled: !!js "ctx.get('profileContext')?.name?.startsWith('desktop') !== true"
 
     - id: ui-sidebar-terminal
       name: '@deepseek-ai/dsh-client-ui-sidebar-terminal'
@@ -370,7 +370,7 @@
     # permanent deletion and moving a closed Session to another Workspace.
     - id: session-admin
       name: '@deepseek-ai/dsh-session-admin'
-      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
+      disabled: !!js "ctx.get('profileContext')?.name?.startsWith('desktop') !== true"
 
     # Durable workflow lifecycle as an independent Chat node after the
     # existing generic workflow tool row.
@@ -602,4 +602,4 @@
     # loopback connection. Other profiles do not expose the transfer routes.
     - id: preset-transfer
       name: '@deepseek-ai/dsh-preset-transfer'
-      disabled: !!js "ctx.get('profileContext')?.name !== 'desktop'"
+      disabled: !!js "ctx.get('profileContext')?.name?.startsWith('desktop') !== true"

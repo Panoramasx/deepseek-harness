@@ -14,12 +14,16 @@ export interface DesktopPaths {
 /**
  * Resolve every Electron-owned path without changing the shared data roots.
  * @param dshHome - Harness home shared with npm-installed dsh.
+ * @param profileName - Desktop profile directory name (`desktop`, `desktop-work`, …).
  * @returns immutable desktop path set.
  */
-export function resolveDesktopPaths(dshHome: string = resolveDshHome()): DesktopPaths {
+export function resolveDesktopPaths(dshHome: string = resolveDshHome(), profileName = 'desktop'): DesktopPaths {
+  if (!/^[a-z0-9][a-z0-9-]*$/u.test(profileName)) throw new Error(`desktop: invalid profile name ${JSON.stringify(profileName)}`)
+  const profile = join(dshHome, 'profiles', profileName)
   return {
-    profile: join(dshHome, 'profiles', 'desktop'),
-    safeModeProfile: join(dshHome, 'profiles', 'desktop-safe', 'desktop'),
-    lock: join(dshHome, 'profiles', 'desktop', 'lock'),
+    profile,
+    // The safe profile's basename stays `desktop` so desktop-gated rows still mount.
+    safeModeProfile: join(dshHome, 'profiles', `${profileName}-safe`, 'desktop'),
+    lock: join(profile, 'lock'),
   }
 }
