@@ -43,6 +43,8 @@ import { prepareDesktopUpdateWindow } from './update-window.ts'
 import { DesktopCommandManager } from './command-management.ts'
 import { serveWebDocument, authenticateWebHost, forwardWebRequest } from './web-document.ts'
 import { DesktopFatalRecovery } from './fatal-recovery.ts'
+import { LanMobileBridge } from './mobile/lan-mobile-bridge.ts'
+import { createFilePairingPinStore, pairingPinStorePath } from './mobile/pairing-pin-store.ts'
 import { pruneCrashReports, RendererConsoleTail, writeCrashReport, type CrashReportSource } from './crash-report.ts'
 import { OperationJournal } from './operation-journal.ts'
 import { runOperationReportJob, type OperationReportJobResult } from './operation-report-job.ts'
@@ -489,6 +491,32 @@ async function main(): Promise<void> {
   let workspaceRecovery: Promise<void> | undefined
   let mainWindow: BrowserWindow | undefined
   let welcomeWindow: BrowserWindow | undefined
+  const showMobilePairing = async (): Promise<void> => {
+    const messages = currentDesktopLocale().messages
+    if (safeMode || mobileBridge === undefined) {
+      await dialog.showMessageBox({ type: 'info', title: messages.connectMobileMenu,
+        message: messages.startupFailed, detail: 'Mobile connection is unavailable in Safe Mode.' })
+      return
+    }
+    const snapshot = await mobileBridge.start()
+    const desktopUrl = mobileBridge.createDesktopUrl()
+    if (!snapshot.running || desktopUrl === undefined) {
+      await dialog.showMessageBox({ type: 'warning', title: messages.connectMobileMenu,
+        message: messages.startupFailed, detail: 'The mobile bridge could not start.' })
+      return
+    }
+    if (mobileWindow !== undefined && !mobileWindow.isDestroyed()) mobileWindow.destroy()
+    mobileWindow = new BrowserWindow({
+      width: 560, height: 720, minWidth: 420, minHeight: 560,
+      title: messages.connectMobileMenu, ...mainWindow === undefined ? {} : { parent: mainWindow },
+      backgroundColor: nativeTheme.shouldUseDarkColors ? '#141416' : '#ffffff',
+      webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true },
+    })
+    mobileWindow.on('closed', () => { mobileWindow = undefined })
+    await mobileWindow.loadURL(desktopUrl)
+    mobileWindow.show()
+    mobileWindow.focus()
+  }
   const turnNotifications = new DesktopTurnNotifications({
     locale: currentDesktopLocale,
     enabled: () => desktopSettings.notifications.enabled,
@@ -575,6 +603,8 @@ async function main(): Promise<void> {
   const applicationUrl = `${SCHEME}://app/`
   let hostUrl: string | undefined
   let hostCookie: string | undefined
+  let mobileBridge: LanMobileBridge | undefined
+  let mobileWindow: BrowserWindow | undefined
   const browserGuests = new DesktopBrowserGuests(() => hostUrl)
   const presetPackages = new DesktopPresetPackages({
     locale: currentDesktopLocale,
@@ -638,6 +668,21 @@ async function main(): Promise<void> {
         const ready = await host.start()
         hostCookie = await authenticateWebHost(ready.url)
         hostUrl = ready.url
+        if (!safeMode) {
+          mobileBridge ??= new LanMobileBridge({
+            harnessUrl: () => hostUrl,
+            harnessCookie: () => hostCookie,
+            locale: () => currentDesktopLocale().id === 'zh-CN' ? 'zh' : 'en',
+            desktopName: 'Panorama Harness',
+            profileName: desktopProfile,
+            appIconPath: join(app.getAppPath(), 'resources', 'icon.png'),
+            cloudflaredCacheDir: join(app.getPath('userData'), 'bin'),
+            tunnelLog: (message) => { console.warn(message) },
+            onConnectedChange: () => {},
+            pairingPinStore: createFilePairingPinStore(pairingPinStorePath(join(app.getPath('userData'), 'mobile'))),
+          })
+          void mobileBridge.start().catch((error: unknown) => { console.error('mobile bridge:', error) })
+        }
         if (ready.injections === undefined) throw new Error('Desktop Host did not provide boot injections')
         injections = ready.injections
         welcomeBackend = await connectDesktopWelcome(ready.url, (input, init) => net.fetch(input, init), async () => (await session.defaultSession.cookies.get({ url: ready.url })).map(cookie => `${cookie.name}=${cookie.value}`).join('; '))
@@ -760,6 +805,7 @@ async function main(): Promise<void> {
     return welcomeBackend.read()
   }
   stopForRecovery = async () => {
+    await mobileBridge?.stop()
     const reports = stopOperationReports()
     try { await backend.close() }
     finally { await Promise.all([operationJournal?.drain(500), reports]) }
@@ -1174,6 +1220,8 @@ async function main(): Promise<void> {
     { type: 'separator' },
     { label: safeMode ? currentDesktopLocale().messages.safeModeExit : currentDesktopLocale().messages.safeModeRestart,
       click: () => { relaunchWithMode(!safeMode) } },
+    { label: currentDesktopLocale().messages.connectMobileMenu,
+      enabled: !safeMode, click: () => { void showMobilePairing().catch((error: unknown) => { console.error(error) }) } },
     { label: currentDesktopLocale().messages.profileMenu,
       submenu: [
         ...profiles.map(name => ({

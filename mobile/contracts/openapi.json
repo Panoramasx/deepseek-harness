@@ -1,0 +1,40 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Panorama Harness mobile API", "version": "1.0.0" },
+  "servers": [{ "url": "http://127.0.0.1:{port}", "variables": { "port": { "default": "43127" } } }],
+  "paths": {
+    "/mobile/v1/pair/claim": {
+      "post": {
+        "summary": "Claim a QR pairing token",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["token"], "properties": { "token": { "type": "string" } } } } } },
+        "responses": { "200": { "description": "LAN session or tunnel challenge" }, "401": { "description": "Invalid or expired token" } }
+      }
+    },
+    "/mobile/v1/pair/verify": {
+      "post": {
+        "summary": "Verify the tunnel PIN",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["challenge", "pin"], "properties": { "challenge": { "type": "string" }, "pin": { "type": "string" } } } } } },
+        "responses": { "200": { "description": "Session token" }, "401": { "description": "Invalid PIN" }, "429": { "description": "Rate limited" } }
+      }
+    },
+    "/mobile/v1/status": { "get": { "security": [{ "bearer": [] }], "responses": { "200": { "description": "Connection status" } } } },
+    "/mobile/v1/capabilities": { "get": { "responses": { "200": { "description": "API capabilities" } } } },
+    "/mobile/v1/rpc": {
+      "post": {
+        "security": [{ "bearer": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["method"], "properties": { "method": { "type": "string" }, "payload": { "type": "object" } } } } } },
+        "responses": { "200": { "description": "Method result" }, "403": { "description": "Method not allowed" } }
+      }
+    },
+    "/mobile/v1/session/ticket": {
+      "post": {
+        "security": [{ "bearer": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["sessionId"], "properties": { "sessionId": { "type": "string" } } } } } },
+        "responses": { "200": { "description": "One-time WebSocket ticket" } }
+      }
+    },
+    "/mobile/v1/reconnect": { "post": { "security": [{ "bearer": [] }], "responses": { "200": { "description": "Session restored" }, "401": { "description": "Rescan required" } } } },
+    "/mobile/v1/disconnect": { "post": { "security": [{ "bearer": [] }], "responses": { "200": { "description": "Disconnected" } } } }
+  },
+  "components": { "securitySchemes": { "bearer": { "type": "http", "scheme": "bearer" } } }
+}
