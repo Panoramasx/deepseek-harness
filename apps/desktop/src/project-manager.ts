@@ -1,6 +1,7 @@
 /** Desktop profile initialization and native recovery. */
 
 import {
+  cpSync,
   existsSync,
   fsyncSync,
   lstatSync,
@@ -13,7 +14,7 @@ import {
   writeFileSync,
   writeSync,
 } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import {
   DESKTOP_HOST_PACKAGE,
   desktopCorePackageOverrides,
@@ -96,6 +97,49 @@ export class DesktopProjectManager {
       // Safe Mode must not replay a user patch that could re-enable third-party rows.
       writeFileSync(join(dir, 'cordis.patch.yml'), '[]\n', { mode: 0o600 })
       initProfile(dir, WEB_PROFILE.bundles)
+      return dir
+    })
+  }
+
+  /**
+   * Create an empty official-core profile at this manager's path.
+   * @returns the prepared profile directory.
+   */
+  async createProfile(): Promise<string> {
+    return this.withLock(() => {
+      const dir = this.paths.profile
+      if (existsSync(join(dir, 'package.json'))) throw new Error(`desktop: profile ${JSON.stringify(dir)} already exists`)
+      mkdirSync(dir, { recursive: true, mode: 0o700 })
+      writeJson(join(dir, 'package.json'), {
+        name: `dsh-profile-${basename(dir)}`,
+        private: true,
+        dependencies: {},
+        dsh: { profile: { bundles: [...WEB_PROFILE.bundles] } },
+      })
+      writeFileSync(join(dir, 'cordis.patch.yml'), '[]\n', { mode: 0o600 })
+      initProfile(dir, WEB_PROFILE.bundles)
+      return dir
+    })
+  }
+
+  /**
+   * Copy another profile's manifest, patch, and installed packages into this manager's path.
+   * @param source - existing profile directory to duplicate.
+   * @returns the prepared profile directory.
+   */
+  async duplicateProfile(source: string): Promise<string> {
+    return this.withLock(() => {
+      const dir = this.paths.profile
+      if (existsSync(join(dir, 'package.json'))) throw new Error(`desktop: profile ${JSON.stringify(dir)} already exists`)
+      cpSync(source, dir, {
+        recursive: true,
+        verbatimSymlinks: true,
+        filter: path => basename(path) !== 'lock' && !basename(path).endsWith('.bak'),
+      })
+      const manifestPath = join(dir, 'package.json')
+      const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { name?: string }
+      manifest.name = `dsh-profile-${basename(dir)}`
+      writeJson(manifestPath, manifest)
       return dir
     })
   }

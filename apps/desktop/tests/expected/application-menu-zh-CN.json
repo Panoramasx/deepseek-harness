@@ -25,6 +25,20 @@
     "label": "以安全模式重启"
   },
   {
+    "label": "配置",
+    "submenu": [
+      {
+        "type": "separator"
+      },
+      {
+        "label": "新建工作配置"
+      },
+      {
+        "label": "复制当前配置"
+      }
+    ]
+  },
+  {
     "role": "toggleDevTools",
     "label": "开发者工具"
   },

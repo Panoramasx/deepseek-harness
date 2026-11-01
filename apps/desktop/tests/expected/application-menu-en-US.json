@@ -25,6 +25,20 @@
     "label": "Restart in Safe Mode"
   },
   {
+    "label": "Profile",
+    "submenu": [
+      {
+        "type": "separator"
+      },
+      {
+        "label": "New Work Profile"
+      },
+      {
+        "label": "Duplicate Current Profile"
+      }
+    ]
+  },
+  {
     "role": "toggleDevTools",
     "label": "Developer tools"
   },

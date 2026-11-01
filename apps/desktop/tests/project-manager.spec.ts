@@ -96,6 +96,36 @@ describe('desktop external plugin profile', () => {
     expect(lstatSync(path).isDirectory()).toBe(true)
     expect(lstatSync(join(profile, 'node_modules/plugin')).isDirectory()).toBe(true)
   })
+  it('creates an empty official-core profile and refuses to overwrite it', async () => {
+    const { root, manager } = setup()
+    const target = new DesktopProjectManager(resolveDesktopPaths(join(root, '.dsh'), 'desktop-work'), { dsh: manager.runtime.dsh })
+    await expect(target.createProfile()).resolves.toBe(target.paths.profile)
+    const manifest = JSON.parse(readFileSync(join(target.paths.profile, 'package.json'), 'utf8')) as {
+      name: string
+      dsh: { profile: { bundles: string[] } }
+    }
+    expect(manifest.name).toBe('dsh-profile-desktop-work')
+    expect(manifest.dsh.profile.bundles).toEqual(['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'])
+    expect(readFileSync(join(target.paths.profile, 'cordis.patch.yml'), 'utf8')).toBe('[]\n')
+    await expect(target.createProfile()).rejects.toThrow('already exists')
+  })
+
+  it('duplicates a profile including its plugin state without changing the source', async () => {
+    const { root, manager } = setup()
+    await manager.applyRelease()
+    seedPlugin(manager)
+    const target = new DesktopProjectManager(resolveDesktopPaths(join(root, '.dsh'), 'desktop-work'), { dsh: manager.runtime.dsh })
+    await expect(target.duplicateProfile(manager.paths.profile)).resolves.toBe(target.paths.profile)
+    const manifest = JSON.parse(readFileSync(join(target.paths.profile, 'package.json'), 'utf8')) as {
+      name: string
+      dependencies: Record<string, string>
+    }
+    expect(manifest.name).toBe('dsh-profile-desktop-work')
+    expect(manifest.dependencies.plugin).toBe('1.0.0')
+    expect(readFileSync(join(target.paths.profile, 'node_modules/plugin/bundle.yml'), 'utf8')).toBe('[]\n')
+    expect(JSON.parse(readFileSync(join(manager.paths.profile, 'package.json'), 'utf8')).name).toBe('dsh-profile-desktop')
+  })
+
   it('reuses plugin files without scanning manifests and can disable them', async () => {
     const { manager } = setup()
     await manager.applyRelease()

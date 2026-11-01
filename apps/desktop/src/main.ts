@@ -422,6 +422,27 @@ async function main(): Promise<void> {
       return [desktopProfile]
     }
   })()
+  const nextProfileName = (): string => {
+    const base = 'desktop-work'
+    if (!profiles.includes(base)) return base
+    for (let index = 2; ; index += 1) {
+      const candidate = `${base}-${String(index)}`
+      if (!profiles.includes(candidate)) return candidate
+    }
+  }
+  const createDesktopProfile = async (duplicate: boolean): Promise<void> => {
+    try {
+      const name = nextProfileName()
+      const target = new DesktopProjectManager(resolveDesktopPaths(undefined, name), resources)
+      if (duplicate) await target.duplicateProfile(paths.profile)
+      else await target.createProfile()
+      relaunchWithProfile(name)
+    } catch (error) {
+      const messages = currentDesktopLocale().messages
+      await dialog.showMessageBox({ type: 'error', title: messages.profileMenu,
+        message: messages.startupFailed, detail: error instanceof Error ? error.message : String(error) })
+    }
+  }
   const activeProject = safeMode ? await manager.prepareSafeModeProfile() : paths.profile
   if (safeMode) {
     const messages = currentDesktopLocale().messages
@@ -1129,13 +1150,18 @@ async function main(): Promise<void> {
     { type: 'separator' },
     { label: safeMode ? currentDesktopLocale().messages.safeModeExit : currentDesktopLocale().messages.safeModeRestart,
       click: () => { relaunchWithMode(!safeMode) } },
-    ...profiles.length > 1 ? [{
-      label: currentDesktopLocale().messages.profileMenu,
-      submenu: profiles.map(name => ({
-        label: name, type: 'radio' as const, checked: name === desktopProfile,
-        click: () => { relaunchWithProfile(name) },
-      })),
-    }] : [],
+    { label: currentDesktopLocale().messages.profileMenu,
+      submenu: [
+        ...profiles.map(name => ({
+          label: name, type: 'radio' as const, checked: name === desktopProfile,
+          click: () => { relaunchWithProfile(name) },
+        })),
+        { type: 'separator' as const },
+        { label: currentDesktopLocale().messages.newProfileMenu,
+          click: () => { void createDesktopProfile(false) } },
+        { label: currentDesktopLocale().messages.duplicateProfileMenu,
+          click: () => { void createDesktopProfile(true) } },
+      ] },
     ...development ? [
       { label: currentDesktopLocale().messages.reloadPageMenu, role: 'reload' as const },
       { label: currentDesktopLocale().messages.restartAppHostMenu, click: () => {
