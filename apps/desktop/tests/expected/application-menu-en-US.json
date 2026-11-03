@@ -25,6 +25,10 @@
     "label": "Restart in Safe Mode"
   },
   {
+    "label": "Connect Phone…",
+    "enabled": true
+  },
+  {
     "label": "Profile",
     "submenu": [
       {

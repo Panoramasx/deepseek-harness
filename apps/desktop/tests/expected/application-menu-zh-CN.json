@@ -25,6 +25,10 @@
     "label": "以安全模式重启"
   },
   {
+    "label": "连接手机…",
+    "enabled": true
+  },
+  {
     "label": "配置",
     "submenu": [
       {
