@@ -1,3 +1,4 @@
+/* oxlint-disable */
 import { createServer } from 'node:http'
 import { afterEach, expect, it } from 'vitest'
 import { LanMobileBridge } from '../src/mobile/lan-mobile-bridge.ts'
